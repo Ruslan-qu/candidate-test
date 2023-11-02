@@ -1,2 +1,4 @@
 # candidate-test
-a
+install docker
+install docker compose
+Docker php && Nginx
