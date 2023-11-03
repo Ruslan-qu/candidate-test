@@ -1,20 +1,20 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.2.1-fpm
 
 
 # /Install packages
-RUN apk add --no-cache curl git build-base zlib-dev oniguruma-dev autoconf bash
+RUN apt-get -y update && apt-get install -y libz-dev libzip-dev libicu-dev zip unzip git vim bash
 
 # /Install extensions
-RUN apk add --no-cache icu-dev && docker-php-ext-configure intl && docker-php-ext-install intl
-
+RUN docker-php-ext-configure intl && docker-php-ext-install intl
+RUN docker-php-ext-configure zip && docker-php-ext-install zip
+RUN docker-php-ext-configure bcmath && docker-php-ext-install bcmath
 # /mysql
 #RUN apk add --no-cache libpq-dev && docker-php-ext-install pdo_mysql
 
 # Configure non-root user.
 ARG PUID=1000
 ARG PGID=1000
-RUN apk --no-cache add shadow && \
-    groupmod -o -g ${PGID} www-data && \
+RUN groupmod -o -g ${PGID} www-data && \
     usermod -o -u ${PUID} -g www-data www-data
 
 COPY ./ /var/www
