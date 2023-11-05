@@ -1,8 +1,8 @@
-version: "3.8"
+version: "3.9"
 
 services:
   php-fpm:
-    container_name: php-fpm
+    container_name: phpFpm
     build:
       context: ./../
       dockerfile: ./docker/php-fpm/Dockerfile
@@ -13,7 +13,7 @@ services:
       - ./../:/var/www/
 
   nginx:
-    container_name: nginx
+    container_name: nGinx
     build:
       context: ./nginx
     ports:
