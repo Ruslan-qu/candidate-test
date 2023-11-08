@@ -1,15 +1,16 @@
-FROM php:8.2.1-fpm
+FROM php:8.2-fpm
 
 
 # /Install packages
-RUN apt-get -y update && apt-get install -y libz-dev libzip-dev libicu-dev zip unzip git vim bash
+RUN apt-get -y update && apt-get install -y libpq-dev libz-dev libzip-dev libicu-dev zip unzip git vim bash
 
 # /Install extensions
 RUN docker-php-ext-configure intl && docker-php-ext-install intl
 RUN docker-php-ext-configure zip && docker-php-ext-install zip
 RUN docker-php-ext-configure bcmath && docker-php-ext-install bcmath
-# /mysql
-#RUN apk add --no-cache libpq-dev && docker-php-ext-install pdo_mysql
+
+#/postgres
+RUN docker-php-ext-install pdo_pgsql
 
 # Configure non-root user.
 ARG PUID=1000
