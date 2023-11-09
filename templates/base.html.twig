@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<htmllang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Shopping{% endblock title %}</title>
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}"/>
+        {% block stylesheets %}
+        {% endblock stylesheets %}
+
+        {% block javascripts %}
+        {% endblock javascripts %}
+    </head>
+    <body>
+        {% block body %}
+            <header>
+                {% block header %}
+                    <div class="header_logo">
+                        <a>{% block logo %}Shopping{% endblock logo %}</a>
+                    </div>
+                    <nav>
+                        <ul>
+                            <li><a href="{{ path('calculate-price')}}">Shopping</a></li>
+                        </ul>
+                    </nav>
+                {% endblock %}
+            </header>
+            <div class="center_block_main">
+                <main>
+                    {% block main %}
+                        <div class="form">
+                            <fieldset>
+                                <legend>{% block legend %}{% endblock legend %}</legend>
+                                    <table>
+                                        <tr>
+                                            {% block form_calculate_price %}
+                                            {% endblock form_calculate_price %}
+                                        </tr>
+                                    </table> 
+                           <fieldset>
+                        </div> 
+                        <div class="table">  
+                            <table>
+                                <thead>
+                                    <tr>
+                                        {% block table_calculate_price %}
+                                        {% endblock table_calculate_price %}	
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    
+                                        {% block tbody_calculate_price %}
+                                        {% endblock tbody_calculate_price %}
+                                    
+                                </tbody>
+                            </table> 
+                        </div> 
+                    {% endblock %}
+                </main>
+            </div>
+        {% endblock %}
+    </body>
+</html>

@@ -1,0 +1,226 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{title_logo}}{% endblock %}
+
+{% block logo %}{{title_logo}}{% endblock %}
+
+{% block legend %}{{legend}}{% endblock legend%}
+
+{% block form_calculate_price %}
+
+{#Форма сохранения счет-фактур#}
+    
+    {{ form_start(form_i_d, {'action': path('sales_incoming_documents')}) }}
+
+        {#{{ dump(app.flashes('children[price]')[0]) }}#}
+        {#Переменный для вывода данных в форме когда форма не прошла валидацию#}
+        {% set number_document = '' %}
+        {% set data_invoice = '' %}
+        {% set id_counterparty = '' %}
+        {% set part_numbers = '' %}
+        {% set manufacturers = '' %}
+        {#{% set name_details = '' %}#}
+        {% set quantity = '' %}
+        {% set price = '' %}
+        {% set id_payment_method = '' %}
+
+        {% for value_number_document in app.flashes('number_document') %}  
+        {% set number_document = value_number_document %}
+        {% endfor %}
+        <th>{{ form_label(form_i_d.number_document) }}<br>
+        {{ form_widget(form_i_d.number_document, {value : number_document}) }}<br>
+        {% for message in app.flashes('children[number_document].data') %}
+        {{ message }}
+        {% endfor %}
+        {{ form_errors(form_i_d.number_document) }}</th>
+
+        {% for value_data_invoice in app.flashes('data_invoice') %}  
+        {% set data_invoice = value_data_invoice %}
+        {% endfor %}
+        <th>{{ form_label(form_i_d.data_invoice) }}<br>
+        {{ form_widget(form_i_d.data_invoice, {value : data_invoice}) }}
+        {{ form_errors(form_i_d.data_invoice) }}</th>
+
+        {% for value_id_counterparty in app.flashes('id_counterparty') %}  
+        {% set id_counterparty = value_id_counterparty %}
+        {% endfor %}
+        <th>{{ form_label(form_i_d.id_counterparty) }}<br>
+        {{ form_widget(form_i_d.id_counterparty, {value : id_counterparty}) }}
+        {{ form_errors(form_i_d.id_counterparty) }}</th>
+
+        {#{{ form_start(form_p_n) }}#}
+
+            {% for value_part_numbers in app.flashes('part_numbers') %}  
+                {% set part_numbers = value_part_numbers %}
+            {% endfor %}
+            <th>{{ form_label(form_p_n.part_numbers) }}<br>
+            {{ form_widget(form_p_n.part_numbers, {value : part_numbers}) }}<br>
+            {% for message in app.flashes('children[part_numbers].data') %}
+                {{ message }}
+            {% endfor %}
+            {{ form_errors(form_p_n.part_numbers) }}</th>
+
+            {% for value_manufacturers in app.flashes('manufacturers') %}  
+                {% set manufacturers = value_manufacturers %}
+            {% endfor %}
+            <th>{{ form_label(form_p_n.manufacturers) }}<br>
+            {{ form_widget(form_p_n.manufacturers, {value : manufacturers}) }}<br>
+            {% for message in app.flashes('children[manufacturers].data') %}
+                {{ message }}
+            {% endfor %}
+            {{ form_errors(form_p_n.manufacturers) }}</th>
+
+            {#{% for value_name_detail in app.flashes('name_details') %}  
+            {% set name_details = value_name_detail %}
+            {% endfor %}
+            <th>{{ form_label(form_p_n.name_details) }}<br>
+            {{ form_widget(form_p_n.name_details, {value : name_details}) }}<br>    
+            {% for message in app.flashes('children[name_details].data') %}
+            {{ message }}
+            {% endfor %}
+            {{ form_errors(form_p_n.name_details) }}</th>#}
+
+        {#{{ form_end(form_p_n) }}#}
+        
+        {% for value_quantity in app.flashes('quantity') %}  
+        {% set quantity = value_quantity %}
+        {% endfor %}
+        <th>{{ form_label(form_i_d.quantity) }}<br>
+        {{ form_widget(form_i_d.quantity, {value : quantity}) }}<br>
+        {% for message in app.flashes('children[quantity].data') %}
+        {{ message }}
+        {% endfor %}
+        {{ form_errors(form_i_d.quantity) }}</th>
+
+        {% for value_price in app.flashes('price') %}  
+        {% set price = value_price %}
+        {% endfor %}
+        <th>{{ form_label(form_i_d.price) }}<br>
+        {{ form_widget(form_i_d.price, {value : price}) }}<br>
+        {% for message in app.flashes('children[price]') %}
+        {{ message }}
+        {% endfor %}
+        {% for message in app.flashes('children[price].data') %}
+        {{ message }}
+        {% endfor %}
+        {{ form_errors(form_i_d.price) }}</th>
+
+        {% for value_id_payment_method in app.flashes('id_payment_method') %}  
+        {% set id_payment_method = value_id_payment_method %}
+        {% endfor %}
+        <th>{{ form_label(form_i_d.id_payment_method) }}<br>
+        {{ form_widget(form_i_d.id_payment_method, {value : id_payment_method}) }}
+        {{ form_errors(form_i_d.id_payment_method) }}</th>
+
+        <th><button class="save" type="submit" name="save">Сохранить</button></th>     
+
+    {{ form_end(form_i_d) }}
+   
+{% endblock form_calculate_price %}
+
+
+{% block table_calculate_price %}
+{#Таблица#}
+{% if arr_incoming_documents %}
+    {% for arr_search_invoice in arr_incoming_documents %}
+        {% if arr_search_invoice %}
+            <th>Products</th>
+            <th>Coupon</th>
+            <th>Tax</th>
+            <th>Total amount</th>
+            <th>Action</th>
+            <th>Action</th>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    <h2>Видите параметры в поиск</h2> 
+{% endif %}
+{% endblock table_calculate_price %}
+
+{% block tbody_calculate_price %}
+        {#выводит таблицу по поиску#}
+        {% for arr_search_invoice in arr_incoming_documents %}
+            {% if arr_search_invoice %}
+                {% for incoming_documents in arr_search_invoice %}
+
+                    <tr>
+                        {% if incoming_documents.getSales() == 1 
+                        and incoming_documents.getRefund() == 1 %}
+
+                            <td>{{ incoming_documents.getNumberDocument() }}</td>
+
+                            <td>{{ incoming_documents.getDataInvoice()|date("d-m-Y") }}</td>
+
+                            <td>{{ incoming_documents.getIdCounterparty().getCounterparty() }}</td>
+
+                            <td>{{ incoming_documents.getIdDetails().getPartNumbers() }}</td>
+
+                            {#<td>{{ incoming_documents.getIdManufacturer().getManufacturers() }}</td>
+
+                            <td>{{ incoming_documents.getIdNameDetail(). getNameDetails() }}</td>#}
+
+                            <td>{{ incoming_documents.getQuantity() - incoming_documents.getQuantitySold() }}</td>
+
+                            <td>{{ ((incoming_documents.getPrice() / 100) 
+                                        / incoming_documents.getQuantity())|number_format(2, '.', '') }}</td>
+
+                            <td>{{ (incoming_documents.getPrice() / 100) - (((incoming_documents.getPrice() / 100) 
+                                        / incoming_documents.getQuantity()) * incoming_documents.getQuantitySold()) }}</td>
+
+                            <form action="/sales_parts" name="form_sales" method="post">
+
+                                {#Переменный для вывода данных в форме когда форма не прошла валидацию#}
+                                {% set quantity_sold = '' %}
+                                {% set price_sold = '' %}
+                                {% set date_sold = '' %}
+
+                                    {% for value_quantity_sold in app.flashes('quantity_sold') %}  
+                                        {% set quantity_sold = value_quantity_sold %}
+                                    {% endfor %}
+                                    {% for value_price_sold in app.flashes('price_sold') %}  
+                                        {% set price_sold = value_price_sold %}
+                                    {% endfor %}
+                                    {% for value_date_sold in app.flashes('date_sold') %}  
+                                        {% set date_sold = value_date_sold %}
+                                    {% endfor %}
+                                
+                                <td><input type="number" name="quantity_sold" required="required" 
+                                    style="width: 70px" placeholder="шт" value="{{ quantity_sold }}" />
+                                            {% for message in app.flashes('[quantity_sold_error]') %}
+                                            {{ message }}
+                                            {% endfor %}
+                                            {% for message in app.flashes('[sum_quantity_sold_error]') %}
+                                            {% endfor %}</td>
+
+                                
+                                <td><input type="number" name="price_sold" required="required" 
+                                    style="width: 98px" placeholder="Цена" value="{{ price_sold }}" />
+                                            {% for message in app.flashes('[price_sold_error]') %}
+                                            {{ message }}
+                                            {% endfor %}</td>
+                                
+                                <td><input type="date" name="date_sold" required="required" value="{{ date_sold }}" /></td>
+
+                                <td><button class="sales" type="submit" name="sales" value="{{ incoming_documents.getId() }}">Продано</button></td>  
+
+                            </form>
+
+                            <form action="/refund_part" name="refund_part" method="get">
+
+                                <td><button class="refund" type="submit" name="refund_part" value="{{ incoming_documents.getId() }}">Возврат</button></td>
+                                
+                            </form>
+                            <form action="/delete_invoice" name="delete_invoice" method="post">
+
+                                <td><button class="delete" type="submit" name="delete_invoice" value="{{ incoming_documents.getId() }}">Удалить</button></td>
+                                
+                            </form>
+                        {% endif %}
+                    </tr>   
+                {% endfor %}
+            {% else %}
+                <h2>Данные не найдены. Видите параметры в поиск</h2>  
+            {% endif %}
+        {% endfor %}
+    
+{% endblock tbody_calculate_price %}
