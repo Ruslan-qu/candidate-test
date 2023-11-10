@@ -16,8 +16,8 @@ class Taxes
     #[ORM\Column(length: 255)]
     private ?string $country_of_taxation = null;
 
-    #[ORM\Column]
-    private ?int $tax_rate = null;
+    #[ORM\Column(length: 255)]
+    private ?string $tax_rate = null;
 
     #[ORM\Column(length: 255)]
     private ?string $tax_number = null;
@@ -42,12 +42,12 @@ class Taxes
         return $this;
     }
 
-    public function getTaxRate(): ?int
+    public function getTaxRate(): ?string
     {
         return $this->tax_rate;
     }
 
-    public function setTaxRate(int $tax_rate): static
+    public function setTaxRate(string $tax_rate): static
     {
         $this->tax_rate = $tax_rate;
 

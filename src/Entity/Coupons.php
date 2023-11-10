@@ -16,9 +16,8 @@ class Coupons
     #[ORM\Column(length: 255)]
     private ?string $number_coupon = null;
 
-    #[ORM\ManyToOne(inversedBy: 'TypeCouponsCoupons')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?TypeCoupons $id_type_coupon = null;
+    #[ORM\Column(length: 255, nullable: false)]
+    private ?string $type_coupon = null;
 
     public function getId(): ?int
     {
@@ -37,14 +36,14 @@ class Coupons
         return $this;
     }
 
-    public function getIdTypeCoupon(): ?TypeCoupons
+    public function getTypeCoupon(): ?string
     {
-        return $this->id_type_coupon;
+        return $this->type_coupon;
     }
 
-    public function setIdTypeCoupon(?TypeCoupons $id_type_coupon): static
+    public function setTypeCoupon(string $type_coupon): static
     {
-        $this->id_type_coupon = $id_type_coupon;
+        $this->type_coupon = $type_coupon;
 
         return $this;
     }
