@@ -26,7 +26,7 @@ class CalculatePriceType extends AbstractType
                 'label' => 'Coupons',
                 'constraints' => [
                     new Regex([
-                        'pattern' => '/^\d+$/',
+                        'pattern' => '/^[\da-z]*$/i',
                         'message' => 'Форма содержит недопустимые символы'
                     ]),
                 ],
@@ -36,13 +36,13 @@ class CalculatePriceType extends AbstractType
                 'label' => 'Taxes',
                 'constraints' => [
                     new Regex([
-                        'pattern' => '/^\d+$/',
+                        'pattern' => '/^[\da-z]*$/i',
                         'message' => 'Форма содержит недопустимые символы'
                     ]),
                 ],
             ])
 
-            ->add('total_amount', TextType::class, [
+            /* ->add('total_amount', TextType::class, [
                 'label' => 'Total amount',
                 'constraints' => [
                     new Regex([
@@ -50,7 +50,7 @@ class CalculatePriceType extends AbstractType
                         'message' => 'Форма содержит недопустимые символы'
                     ]),
                 ],
-            ])
+            ])*/
 
             ->add('button', SubmitType::class);
     }

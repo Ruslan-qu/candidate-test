@@ -35,47 +35,53 @@ class ApplicationController extends AbstractController
 
         /* Подключаем валидацию  */
         $errors_calculate_price = $validator->validate($form_calculate_price);
-        //dd($response);
+
         /*Валидация формы ручного сохранения счет-фактур , номера , производителей, описания деталей */
-        /*if (
+        if (
             $form_calculate_price->isSubmitted() && $form_calculate_price->isValid()
         ) {
+            $idProduct = $request->request->all()['calculate_price']['products'];
 
-            $part_number_strtolower_preg_replace = strtolower(preg_replace(
-                '#[^a-z\d]#i',
+            $number_coupon = strtolower(preg_replace(
+                '#\s#',
                 '',
-                $request->request->all()['part_no']['part_numbers']
+                $request->request->all()['calculate_price']['coupons']
             ));
-
-            $сount_part_number = $doctrine->getRepository(IdDetailsManufacturer::class)
-                ->count(['part_numbers' => $part_number_strtolower_preg_replace]);
+            
+            $taxe = strtolower(preg_replace(
+                '#\s#',
+                '',
+                $request->request->all()['calculate_price']['taxes']
+            ));
+            dd($taxe);
+       
+            $сount_coupon = $doctrine->getRepository(Coupons::class)
+                ->count(['number_coupon' => $number_coupon]);
 
             /* Валидация дулей номеров деталей, сохранения номера , производителей, описания деталей */
-        /*if ($сount_part_number == 0) {
+            if ($сount_coupon != 0) {
 
-                $entity_part_no->setPartNumbers($part_number_strtolower_preg_replace);
+                $find_product = $doctrine->getRepository(Products::class)->find($idProduct);
 
-                $entity_part_no->setManufacturers(
-                    strtolower(preg_replace(
-                        '#[^a-z\d \-&]#i',
-                        '',
-                        $request->request->all()['part_no']['manufacturers']
-                    ))
-                );
+                $find_one_by_coupon = $doctrine->getRepository(Coupons::class)
+                ->findOneBy(['number_coupon' => $number_coupon]);
 
-                $entity_part_no->setIdInStock($doctrine->getRepository(Availability::class)->find(1));
+                $find_one_by_coupon = $doctrine->getRepository(Taxes::class)
+                ->findOneBy(['part_numbers' => $part_number_strtolower_preg_replace]);
+
 
                 /*$entity_part_no->setNameDetails(
                 mb_strtolower(preg_replace(
                     '#[^а-яё\d\s\.,]#ui',
                     '',
                     $request->request->all()['part_no']['name_details']
-                ))
-            );*/
+                ));
 
-        /*    $em = $doctrine->getManager();
+                $em = $doctrine->getManager();
                 $em->persist($entity_part_no);
-                $em->flush();
+                $em->flush();*/
+            }else{
+                $
             }
 
             $id_part_number_manufacturer = $doctrine->getRepository(IdDetailsManufacturer::class)
@@ -87,7 +93,7 @@ class ApplicationController extends AbstractController
 
             /*$entity_incoming_documents->setIdNameDetail($id_part_number_manufacturer);*/
 
-        /*  $entity_incoming_documents->setNumberDocument(
+            /*  $entity_incoming_documents->setNumberDocument(
                 $request->request->all()['incoming_documents']['number_document']
             );
 
@@ -116,10 +122,10 @@ class ApplicationController extends AbstractController
             $em->persist($entity_incoming_documents);
             $em->flush();
 
-            return $this->redirectToRoute('incoming_documents');
-        } else {
+            return $this->redirectToRoute('incoming_documents');*/
+        } /*else {
 
-            /* Выводим вбитые данные в формы сохранения если форма не прошла валидацию, через сессии  */
+             Выводим вбитые данные в формы сохранения если форма не прошла валидацию, через сессии  */
         /*  $value_form_incoming_documents_and_part_no = $request->request->all();
             if ($value_form_incoming_documents_and_part_no) {
                 foreach ($value_form_incoming_documents_and_part_no as $key => $values) {

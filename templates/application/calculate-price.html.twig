@@ -10,7 +10,7 @@
 
 {#Форма сохранения счет-фактур#}
     
-    {{ form_start(form_calculate_price) }}
+    {{ form_start(form_calculate_price, { attr:  {novalidate: 'novalidate'} }) }}
 
         {#{{ dump(app.flashes('children[price]')[0]) }}#}
         {#Переменный для вывода данных в форме когда форма не прошла валидацию#}

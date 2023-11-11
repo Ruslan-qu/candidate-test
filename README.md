@@ -8,3 +8,4 @@ integrate PHPUnit
 install Doctrine
 install PostgreSQL
 Form Customization
+form validation
