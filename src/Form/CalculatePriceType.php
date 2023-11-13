@@ -26,8 +26,8 @@ class CalculatePriceType extends AbstractType
                 'label' => 'Coupons',
                 'constraints' => [
                     new Regex([
-                        'pattern' => '/^[\da-z]*$/i',
-                        'message' => 'Форма содержит недопустимые символы'
+                        'pattern' => '/^([a-z]{1}[0-9]{2})?$/i',
+                        'message' => 'The form contains an invalid number'
                     ]),
                 ],
             ])
@@ -36,8 +36,8 @@ class CalculatePriceType extends AbstractType
                 'label' => 'Taxes',
                 'constraints' => [
                     new Regex([
-                        'pattern' => '/^[\da-z]*$/i',
-                        'message' => 'Форма содержит недопустимые символы'
+                        'pattern' => '/^([a-z]{2}([a-z|0-9]{2})?[0-9]{9})?$/i',
+                        'message' => 'The form contains an invalid number'
                     ]),
                 ],
             ])

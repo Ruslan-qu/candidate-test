@@ -22,12 +22,17 @@ class ApplicationController extends AbstractController
         Request $request,
         ValidatorInterface $validator
     ): Response {
+
+        /* array for error messages */
+
+        $arr_error = [];
+
         /* Подключаем сущности  */
         $entity_products = new Products();
         $entity_coupons = new Coupons();
         $entity_taxes = new Taxes();
 
-
+        //  $arrProducts = $doctrine->getRepository(Products::class)->findAll();
         /* Подключаем форм */
         $form_calculate_price = $this->createForm(CalculatePriceType::class);
 
@@ -40,37 +45,58 @@ class ApplicationController extends AbstractController
         if (
             $form_calculate_price->isSubmitted() && $form_calculate_price->isValid()
         ) {
+
             $idProduct = $request->request->all()['calculate_price']['products'];
+
+            $find_product = $doctrine->getRepository(Products::class)->find($idProduct);
 
             $number_coupon = strtolower(preg_replace(
                 '#\s#',
                 '',
                 $request->request->all()['calculate_price']['coupons']
             ));
-            
+
             $taxe = strtolower(preg_replace(
                 '#\s#',
                 '',
                 $request->request->all()['calculate_price']['taxes']
             ));
-            dd($taxe);
-       
+            $tax_number = substr($taxe, 0, 2);
+            //dd($tax_number);
+
             $сount_coupon = $doctrine->getRepository(Coupons::class)
                 ->count(['number_coupon' => $number_coupon]);
+
+            $сount_taxe = $doctrine->getRepository(Taxes::class)
+                ->count(['tax_number' => $tax_number]);
+            //dd(!empty($tax_number));
 
             /* Валидация дулей номеров деталей, сохранения номера , производителей, описания деталей */
             if ($сount_coupon != 0) {
 
-                $find_product = $doctrine->getRepository(Products::class)->find($idProduct);
-
                 $find_one_by_coupon = $doctrine->getRepository(Coupons::class)
-                ->findOneBy(['number_coupon' => $number_coupon]);
+                    ->findOneBy(['number_coupon' => $number_coupon]);
+            } else {
+                if (!empty($number_coupon)) {
+                    $arr_error[] = ['coupon' => 'there is no such number'];
+                }
+            }
 
-                $find_one_by_coupon = $doctrine->getRepository(Taxes::class)
-                ->findOneBy(['part_numbers' => $part_number_strtolower_preg_replace]);
+            if ($сount_taxe != 0) {
+
+                $find_one_by_taxe = $doctrine->getRepository(Taxes::class)
+                    ->findOneBy(['tax_number' => $tax_number]);
+            } else {
+                if (!empty($tax_number)) {
+
+                    $arr_error[] = ['taxe' => 'there is no such number'];
+                }
+            }
+            /*$find_one_by_coupon = $doctrine->getRepository(Taxes::class)
+                    ->findOneBy(['part_numbers' => $part_number_strtolower_preg_replace]);
 
 
-                /*$entity_part_no->setNameDetails(
+                $entity_part_no->setNameDetails(
                 mb_strtolower(preg_replace(
                     '#[^а-яё\d\s\.,]#ui',
                     '',
@@ -80,11 +106,9 @@ class ApplicationController extends AbstractController
                 $em = $doctrine->getManager();
                 $em->persist($entity_part_no);
                 $em->flush();*/
-            }else{
-                $
-            }
 
-            $id_part_number_manufacturer = $doctrine->getRepository(IdDetailsManufacturer::class)
+
+            /* $id_part_number_manufacturer = $doctrine->getRepository(IdDetailsManufacturer::class)
                 ->findOneBy(['part_numbers' => $part_number_strtolower_preg_replace]);
 
             $entity_incoming_documents->setIdDetails($id_part_number_manufacturer);
@@ -163,12 +187,13 @@ class ApplicationController extends AbstractController
             return $this->redirectToRoute('incoming_documents');
         }*/
 
-
+        //dd($arr_error);
 
         return $this->render('application/calculate-price.html.twig', [
             'title_logo' => 'Calculate price',
             'legend' => 'Calculate price',
             'form_calculate_price' => $form_calculate_price->createView(),
+            'arr_error' => $arr_error,
         ]);
     }
 

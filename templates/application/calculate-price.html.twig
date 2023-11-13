@@ -12,7 +12,7 @@
     
     {{ form_start(form_calculate_price, { attr:  {novalidate: 'novalidate'} }) }}
 
-        {#{{ dump(app.flashes('children[price]')[0]) }}#}
+        {#{{ dump(arr_error.0.coupon) }}#}
         {#Переменный для вывода данных в форме когда форма не прошла валидацию#}
         {#{% set number_document = '' %}
         {% set data_invoice = '' %}
@@ -36,10 +36,16 @@
 
         <th>{{ form_label(form_calculate_price.coupons) }}<br>
         {{ form_widget(form_calculate_price.coupons) }}<br>
+        {% for value in arr_error %}  
+        {{ value.coupon }}
+        {% endfor %}
         {{ form_errors(form_calculate_price.coupons) }}</th>
 
         <th>{{ form_label(form_calculate_price.taxes) }}<br>
         {{ form_widget(form_calculate_price.taxes) }}<br>
+        {% for value in arr_error %}  
+        {{ value.taxe }}
+        {% endfor %}
         {{ form_errors(form_calculate_price.taxes) }}</th>
 
          <th>{{ form_widget(form_calculate_price.button, { 'label': 'Calculate', 'attr': {'class': 'save'} }) }}</th>
