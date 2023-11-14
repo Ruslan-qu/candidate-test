@@ -19,15 +19,39 @@
                     </div>
                     <nav>
                         <ul>
-                            <li><a href="{{ path('calculate-price')}}">Shopping</a></li>
+                            <li><a href="{{ path('calculate-price')}}">Calculate</a></li>
+                            <li><a href="{{ path('calculate-price')}}">Purchase</a></li>
                         </ul>
                     </nav>
                 {% endblock %}
             </header>
+            {% block h3 %}
+            <br><h3>Click "Calculate" if you want to get a price</h3></br>
+            <h3>Click "Purchase" if you want to buy</h3>
+            {% endblock h3 %}
             <div class="center_block_main">
+             
                 <main>
                     {% block main %}
+                        <div class="table">  
+                            <table>
+                                <thead>
+                                    <tr>
+                                        {% block name_product %}
+                                        {% endblock name_product %}	
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    
+                                        {% block price_product %}
+                                        {% endblock price_product %}
+                                    
+                                </tbody>
+                            </table> 
+                        </div> 
                         <div class="form">
+                            {% block h2 %}
+                            {% endblock h2 %}
                             <fieldset>
                                 <legend>{% block legend %}{% endblock legend %}</legend>
                                     <table>

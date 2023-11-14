@@ -24,15 +24,25 @@ class ApplicationController extends AbstractController
     ): Response {
 
         /* array for error messages */
-
         $arr_error = [];
+
+        /* array for displaying the coupon price and tax 
+
+        $arr_calculate = [];*/
+
+        /*empty variables for displaying the price, coupon, tax*/
+        $find_Product = '';
+        $find_one_by_coupon = '';
+        $find_one_by_tax = '';
 
         /* Подключаем сущности  */
         $entity_products = new Products();
         $entity_coupons = new Coupons();
         $entity_taxes = new Taxes();
 
-        //  $arrProducts = $doctrine->getRepository(Products::class)->findAll();
+        /* array for displaying a list of products with prices */
+        $arr_products = $doctrine->getRepository(Products::class)->findAll();
+
         /* Подключаем форм */
         $form_calculate_price = $this->createForm(CalculatePriceType::class);
 
@@ -47,8 +57,6 @@ class ApplicationController extends AbstractController
         ) {
 
             $idProduct = $request->request->all()['calculate_price']['products'];
-
-            $find_product = $doctrine->getRepository(Products::class)->find($idProduct);
 
             $number_coupon = strtolower(preg_replace(
                 '#\s#',
@@ -71,129 +79,47 @@ class ApplicationController extends AbstractController
                 ->count(['tax_number' => $tax_number]);
             //dd(!empty($tax_number));
 
-            /* Валидация дулей номеров деталей, сохранения номера , производителей, описания деталей */
+            /*  */
             if ($сount_coupon != 0) {
-
+                // dd($number_coupon);
                 $find_one_by_coupon = $doctrine->getRepository(Coupons::class)
                     ->findOneBy(['number_coupon' => $number_coupon]);
             } else {
                 if (!empty($number_coupon)) {
-                    $arr_error[] = ['coupon' => 'there is no such number'];
+                    $arr_error['coupon'] = 'there is no such number';
                 }
             }
 
             if ($сount_taxe != 0) {
 
-                $find_one_by_taxe = $doctrine->getRepository(Taxes::class)
+                $find_one_by_tax = $doctrine->getRepository(Taxes::class)
                     ->findOneBy(['tax_number' => $tax_number]);
             } else {
                 if (!empty($tax_number)) {
 
-                    $arr_error[] = ['taxe' => 'there is no such number'];
-                }
-            }
-            /*$find_one_by_coupon = $doctrine->getRepository(Taxes::class)
-                    ->findOneBy(['part_numbers' => $part_number_strtolower_preg_replace]);
-
-
-                $entity_part_no->setNameDetails(
-                mb_strtolower(preg_replace(
-                    '#[^а-яё\d\s\.,]#ui',
-                    '',
-                    $request->request->all()['part_no']['name_details']
-                ));
-
-                $em = $doctrine->getManager();
-                $em->persist($entity_part_no);
-                $em->flush();*/
-
-
-            /* $id_part_number_manufacturer = $doctrine->getRepository(IdDetailsManufacturer::class)
-                ->findOneBy(['part_numbers' => $part_number_strtolower_preg_replace]);
-
-            $entity_incoming_documents->setIdDetails($id_part_number_manufacturer);
-
-            $entity_incoming_documents->setIdManufacturer($id_part_number_manufacturer);
-
-            /*$entity_incoming_documents->setIdNameDetail($id_part_number_manufacturer);*/
-
-            /*  $entity_incoming_documents->setNumberDocument(
-                $request->request->all()['incoming_documents']['number_document']
-            );
-
-            $entity_incoming_documents->setDataInvoice(
-                new DateTime($request->request->all()['incoming_documents']['data_invoice'])
-            );
-
-            $entity_incoming_documents->setQuantity(
-                $request->request->all()['incoming_documents']['quantity']
-            );
-
-            $price = $request->request->all()['incoming_documents']['price'];
-            if (strpos($price, ',')) {
-                $strPriceReplace = str_replace(',', '.', $price);
-                $entity_incoming_documents->setPrice($strPriceReplace * 100);
-            } else {
-                $entity_incoming_documents->setPrice($price * 100);
-            }
-
-
-
-            $entity_incoming_documents->setSales(1);
-            $entity_incoming_documents->setRefund(1);
-
-            $em = $doctrine->getManager();
-            $em->persist($entity_incoming_documents);
-            $em->flush();
-
-            return $this->redirectToRoute('incoming_documents');*/
-        } /*else {
-
-             Выводим вбитые данные в формы сохранения если форма не прошла валидацию, через сессии  */
-        /*  $value_form_incoming_documents_and_part_no = $request->request->all();
-            if ($value_form_incoming_documents_and_part_no) {
-                foreach ($value_form_incoming_documents_and_part_no as $key => $values) {
-                    if (is_iterable($values)) {
-                        foreach ($values as $key => $value) {
-                            $this->addFlash($key, $value);
-                        }
-                    }
+                    $arr_error['taxe'] = 'there is no such number';
                 }
             }
 
-            /* Выводим ошибки валидации, через сессии */
-        /* if ($errors_incoming_documents) {
-                foreach ($errors_incoming_documents as $key) {
-                    $message = $key->getmessage();
-                    $propertyPath = $key->getpropertyPath();
-                    $this->addFlash(
-                        $propertyPath,
-                        $message
-                    );
-                }
+            if (empty($arr_error)) {
+
+                $find_Product = $doctrine->getRepository(Products::class)->find($idProduct);
             }
+        }
 
-            if ($errors_part_no) {
-                foreach ($errors_part_no as $key) {
-                    $message = $key->getmessage();
-                    $propertyPath = $key->getpropertyPath();
-                    $this->addFlash(
-                        $propertyPath,
-                        $message
-                    );
-                }
-            }
 
-            return $this->redirectToRoute('incoming_documents');
-        }*/
-
-        //dd($arr_error);
+        //dd($arr_calculate);
 
         return $this->render('application/calculate-price.html.twig', [
             'title_logo' => 'Calculate price',
             'legend' => 'Calculate price',
+            'arr_products' => $arr_products,
             'form_calculate_price' => $form_calculate_price->createView(),
+            'form_reset' => $form_calculate_price->createView(),
             'arr_error' => $arr_error,
+            'find_Product' => $find_Product,
+            'find_one_by_coupon' => $find_one_by_coupon,
+            'find_one_by_tax' => $find_one_by_tax,
         ]);
     }
 
@@ -204,5 +130,13 @@ class ApplicationController extends AbstractController
         return $this->render('application/purchase.html.twig', [
             'title_logo' => 'Purchase',
         ]);
+    }
+
+
+    /* функция сброса */
+    #[Route('/reset', name: 'reset')]
+    public function ResetPart(): Response
+    {
+        return $this->redirectToRoute('home_page');
     }
 }

@@ -17,13 +17,10 @@ class Taxes
     private ?string $country_of_taxation = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $tax_rate = null;
-
-    #[ORM\Column(length: 255)]
     private ?string $tax_number = null;
 
     #[ORM\Column]
-    private ?int $number_of_characters = null;
+    private ?int $tax_rate = null;
 
     public function getId(): ?int
     {
@@ -42,18 +39,6 @@ class Taxes
         return $this;
     }
 
-    public function getTaxRate(): ?string
-    {
-        return $this->tax_rate;
-    }
-
-    public function setTaxRate(string $tax_rate): static
-    {
-        $this->tax_rate = $tax_rate;
-
-        return $this;
-    }
-
     public function getTaxNumber(): ?string
     {
         return $this->tax_number;
@@ -66,14 +51,14 @@ class Taxes
         return $this;
     }
 
-    public function getNumberOfCharacters(): ?int
+    public function getTaxRate(): ?int
     {
-        return $this->number_of_characters;
+        return $this->tax_rate;
     }
 
-    public function setNumberOfCharacters(int $number_of_characters): static
+    public function setTaxRate(int $tax_rate): static
     {
-        $this->number_of_characters = $number_of_characters;
+        $this->tax_rate = $tax_rate;
 
         return $this;
     }

@@ -1,50 +1,61 @@
 {% extends 'base.html.twig' %}
 
+{% block h3 %}{% endblock h3 %}
+
 {% block title %}{{title_logo}}{% endblock %}
 
 {% block logo %}{{title_logo}}{% endblock %}
 
 {% block legend %}{{legend}}{% endblock legend%}
 
-{% block form_calculate_price %}
 
-{#Форма сохранения счет-фактур#}
+
+{% block name_product %}
+    {% for value_product in arr_products %} 
+
+            <th>{{ value_product.getNameProduct() }}</th>
+
+    {% endfor %}        
+{% endblock name_product %}
+
+{% block price_product %}
+    {% for value_product in arr_products %} 
+
+        <td>{{ value_product.getPriceProduct() }} euro</td>
+
+    {% endfor %}
+{% endblock price_product %}
+
+{% block h2 %}
+    <br><h2>Select the product, if available, specify the discount coupon, specify the tax number</h2></br>
+{% endblock h2 %}
+
+{% block form_calculate_price %} 
+
+    {#Форма сохранения счет-фактур#}
     
     {{ form_start(form_calculate_price, { attr:  {novalidate: 'novalidate'} }) }}
 
-        {#{{ dump(arr_error.0.coupon) }}#}
-        {#Переменный для вывода данных в форме когда форма не прошла валидацию#}
-        {#{% set number_document = '' %}
-        {% set data_invoice = '' %}
-        {% set id_counterparty = '' %}
-        {% set part_numbers = '' %}
-        {% set manufacturers = '' %}#}
-
-       {# {% for value_number_document in app.flashes('number_document') %}  
-        {% set number_document = value_number_document %}
-        {% endfor %}
-        <th>{{ form_label(form_i_d.number_document) }}<br>
-        {{ form_widget(form_i_d.number_document, {value : number_document}) }}<br>
-        {% for message in app.flashes('children[number_document].data') %}
-        {{ message }}
-        {% endfor %}
-        {{ form_errors(form_i_d.number_document) }}</th>#}
-
+        {#{{ dump(arr_error) }}#}
         <th>{{ form_label(form_calculate_price.products) }}<br>
         {{ form_widget(form_calculate_price.products) }}<br>
         {{ form_errors(form_calculate_price.products) }}</th>
 
         <th>{{ form_label(form_calculate_price.coupons) }}<br>
         {{ form_widget(form_calculate_price.coupons) }}<br>
-        {% for value in arr_error %}  
-        {{ value.coupon }}
+        {% for key, value in arr_error %}
+           {% if key == 'coupon' %}
+                {{ value }}
+            {% endif %}    
         {% endfor %}
         {{ form_errors(form_calculate_price.coupons) }}</th>
 
         <th>{{ form_label(form_calculate_price.taxes) }}<br>
         {{ form_widget(form_calculate_price.taxes) }}<br>
-        {% for value in arr_error %}  
-        {{ value.taxe }}
+        {% for key, value in arr_error %}  
+            {% if key == 'taxe' %}
+                {{ value }}
+            {% endif %} 
         {% endfor %}
         {{ form_errors(form_calculate_price.taxes) }}</th>
 
@@ -60,12 +71,11 @@
 {#{% if arr_incoming_documents %}
     {% for arr_search_invoice in arr_incoming_documents %}
         {% if arr_search_invoice %}#}
-            <th>Products</th>
+            <th>Product price</th>
             <th>Coupon</th>
             <th>Tax</th>
             <th>Total amount</th>
-            <th>Action</th>
-            <th>Action</th>
+            <th>Reset</th>
         {#{% endif %}
     {% endfor %}
 {% else %}
@@ -73,38 +83,35 @@
 {% endif %}#}
 {% endblock table_calculate_price %}
 
-{#{% block tbody_calculate_price %}
-        {#выводит таблицу по поиску#}
-       {# {% for arr_search_invoice in arr_incoming_documents %}
+{% block tbody_calculate_price %}
+    {#выводит таблицу по поиску#}
+    {#{% for calculate in arr_calculate %}
             {% if arr_search_invoice %}
                 {% for incoming_documents in arr_search_invoice %}
 
                     <tr>
                         {% if incoming_documents.getSales() == 1 
-                        and incoming_documents.getRefund() == 1 %}
+                        and incoming_documents.getRefund() == 1 %}#}
 
-                            <td>{{ incoming_documents.getNumberDocument() }}</td>
+                            <td>{{ find_Product.getPriceProduct()|default('') }} euro</td>
 
-                            <td>{{ incoming_documents.getDataInvoice()|date("d-m-Y") }}</td>
+                            <td>{{ find_one_by_coupon.getDiscount()|default('') }}
+                            {% if find_one_by_coupon.getIdTypeCoupon().getId() == 1 %}
+                                %|default('')
+                            {% else %}
+                                {{ euro|default('') }}
+                            {% endif %}
+                        </td>
 
-                            <td>{{ incoming_documents.getIdCounterparty().getCounterparty() }}</td>
+                            <td>{{ find_one_by_tax.getTaxRate()|default('') }} %</td>
 
-                            <td>{{ incoming_documents.getIdDetails().getPartNumbers() }}</td>
+                            {#<td>{{ find_Product.getPriceProduct() - find_one_by_coupon.getTypeCoupon() + find_one_by_tax.getTaxRate() }}</td>#}
 
-                            {#<td>{{ incoming_documents.getIdManufacturer().getManufacturers() }}</td>
+                            {{ form_start(form_calculate_price, {'action': path('reset')}) }}
 
-                            <td>{{ incoming_documents.getIdNameDetail(). getNameDetails() }}</td>#}
+                            <td>{{ form_widget(form_reset.button, { 'label': 'Reset', 'attr': {'class': 'reset'} }) }}</td>
 
- {#                           <td>{{ incoming_documents.getQuantity() - incoming_documents.getQuantitySold() }}</td>
-
-                            <td>{{ ((incoming_documents.getPrice() / 100) 
-                                        / incoming_documents.getQuantity())|number_format(2, '.', '') }}</td>
-
-                            <td>{{ (incoming_documents.getPrice() / 100) - (((incoming_documents.getPrice() / 100) 
-                                        / incoming_documents.getQuantity()) * incoming_documents.getQuantitySold()) }}</td>
-
-                            <form action="/sales_parts" name="form_sales" method="post">
-
+                            {{ form_end(form_calculate_price) }}
                                 {#Переменный для вывода данных в форме когда форма не прошла валидацию#}
  {#}                               {% set quantity_sold = '' %}
                                 {% set price_sold = '' %}
@@ -157,6 +164,6 @@
             {% else %}
                 <h2>Данные не найдены. Видите параметры в поиск</h2>  
             {% endif %}
-        {% endfor %}
+    {% endfor %}#}
     
-{% endblock tbody_calculate_price %}#}
+{% endblock tbody_calculate_price %}
