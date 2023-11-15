@@ -11,7 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
-class CalculatePriceType extends AbstractType
+class PurchaseType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -42,6 +42,8 @@ class CalculatePriceType extends AbstractType
                     ]),
                 ],
             ])
+
+
 
             ->add('button', SubmitType::class);
     }

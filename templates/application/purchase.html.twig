@@ -1,20 +1,119 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ApplicationController!{% endblock %}
+{% block h3 %}{% endblock h3 %}
 
-{% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+{% block title %}{{title_logo}}{% endblock %}
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+{% block logo %}{{title_logo}}{% endblock %}
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ '/var/www/src/Controller/ApplicationController.php'|file_link(0) }}">src/Controller/ApplicationController.php</a></code></li>
-        <li>Your template at <code><a href="{{ '/var/www/templates/application/index.html.twig'|file_link(0) }}">templates/application/index.html.twig</a></code></li>
-    </ul>
-</div>
-{% endblock %}
+{% block legend %}{{legend}}{% endblock legend%}
+
+{% block name_product %}
+    {% for value_product in arr_products %} 
+
+            <th>{{ value_product.getNameProduct() }}</th>
+
+    {% endfor %}        
+{% endblock name_product %}
+
+{% block price_product %}
+    {% for value_product in arr_products %} 
+
+        <td>{{ value_product.getPriceProduct() }} euro</td>
+
+    {% endfor %}
+{% endblock price_product %}
+
+{% block h2 %}
+    <br><h2>Select the product, if available, specify the discount coupon, 
+    specify the tax number, payment method</h2></br>
+{% endblock h2 %}
+
+{% block form_calculate_price %} 
+
+    {#form purchase#}
+    
+    {{ form_start(form_purchase) }}
+
+        <th>{{ form_label(form_purchase.products) }}<br>
+        {{ form_widget(form_purchase.products) }}<br>
+        {{ form_errors(form_purchase.products) }}</th>
+
+        <th>{{ form_label(form_purchase.coupons) }}<br>
+        {{ form_widget(form_purchase.coupons) }}<br>
+        {% for key, value in arr_error %}
+           {% if key == 'coupon' %}
+                {{ value }}
+            {% endif %}    
+        {% endfor %}
+        {{ form_errors(form_purchase.coupons) }}</th>
+
+        <th>{{ form_label(form_purchase.taxes) }}<br>
+        {{ form_widget(form_purchase.taxes) }}<br>
+        {% for key, value in arr_error %}  
+            {% if key == 'taxe' %}
+                {{ value }}
+            {% endif %} 
+        {% endfor %}
+        {{ form_errors(form_purchase.taxes) }}</th>
+
+         <th>{{ form_widget(form_purchase.button, { 'label': 'Calculate', 'attr': {'class': 'save'} }) }}</th>
+
+    {{ form_end(form_purchase) }}
+   
+{% endblock form_calculate_price %}
+
+
+{% block table_calculate_price %}
+{#Table#}
+{% if find_Product is not empty %}
+            <th>Product price</th>
+            <th>Coupon</th>
+            <th>Tax</th>
+            <th>Total amount</th>
+            <th>Payment method</th>
+            <th>Action</th>
+{% endif %}
+{% endblock table_calculate_price %}
+
+{% block tbody_calculate_price %}
+    <tr>
+        {% if find_Product is not empty %}
+
+            <td>{{ find_Product.getPriceProduct()|default('') }} euro</td>
+                            
+            <td>{{ find_one_by_coupon.getDiscount()|default('') }}
+            {% if find_one_by_coupon is not empty %}
+                {% if find_one_by_coupon.getIdTypeCoupon().getId() == 1 %}
+                    %
+                {% elseif find_one_by_coupon.getIdTypeCoupon().getId() == 2 %}
+                    euro
+                {% endif %}
+            {% endif %}</td>
+
+            <td>{{ find_one_by_tax.getTaxRate()|default('') }} %</td>
+
+                {% if find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 1 %}
+                    <td>{{ (find_Product.getPriceProduct() 
+                            - (find_Product.getPriceProduct() / 100 * find_one_by_coupon.getDiscount()))
+                                + ((find_Product.getPriceProduct() - (find_Product.getPriceProduct() 
+                                    / 100 * find_one_by_coupon.getDiscount()))
+                      / 100 * find_one_by_tax.getTaxRate()) }}</td>
+                {% elseif find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 2 %}
+                    <td>{{ (find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
+                     + ((find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
+                      / 100 * find_one_by_tax.getTaxRate()) }}</td>
+                {% else %}   
+                    <td>{{ find_Product.getPriceProduct() + (find_Product.getPriceProduct() / 100 * find_one_by_tax.getTaxRate()) }}</td>
+                {% endif %}
+
+            {{ form_start(form_calculate_price, {'action': path('reset')}) }}
+
+            <td>{{ form_widget(form_reset.button, { 'label': 'Buy', 'attr': {'class': 'reset'} }) }}</td>
+
+            {{ form_end(form_calculate_price) }}
+
+        {% endif %}
+    </tr>   
+                
+{% endblock tbody_calculate_price %}
