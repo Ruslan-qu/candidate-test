@@ -50,8 +50,8 @@
                             </table> 
                         </div> 
                         <div class="form">
-                            {% block h2 %}
-                            {% endblock h2 %}
+                            {% block h2_calculate_price %}
+                            {% endblock h2_calculate_price %}
                             <fieldset>
                                 <legend>{% block legend %}{% endblock legend %}</legend>
                                     <table>
@@ -76,7 +76,20 @@
                                         {% endblock tbody_calculate_price %}
                                     
                                 </tbody>
-                            </table> 
+                            </table>    
+                        </div> 
+                        <div class="form">
+                            {% block h2_purchase %}
+                            {% endblock h2_purchase %}
+                            <fieldset>
+                                <legend>{% block legend_purchase %}{% endblock legend_purchase %}</legend>
+                                    <table>
+                                        <tr>
+                                            {% block form_purchase %}
+                                            {% endblock form_purchase %}
+                                        </tr>
+                                    </table> 
+                           <fieldset>
                         </div> 
                     {% endblock %}
                 </main>

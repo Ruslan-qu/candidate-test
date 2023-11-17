@@ -6,6 +6,7 @@ use App\Entity\Taxes;
 use App\Entity\Coupons;
 use App\Entity\Products;
 use App\Form\PurchaseType;
+use StripePaymentProcessor;
 use App\Form\CalculatePriceType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
@@ -112,7 +113,7 @@ class ApplicationController extends AbstractController
         ManagerRegistry $doctrine,
         Request $request,
     ): Response {
-
+        //dd($request);
         /* array for error messages */
         $arr_error = [];
 
@@ -125,10 +126,12 @@ class ApplicationController extends AbstractController
         $arr_products = $doctrine->getRepository(Products::class)->findAll();
 
         /* Connecting the form */
-        $form_purchase = $this->createForm(PurchaseType::class);
+        $form_purchase = $this->createForm(CalculatePriceType::class);
+        $form_buy = $this->createForm(PurchaseType::class);
 
         $form_purchase->handleRequest($request);
-
+        $form_buy->handleRequest($request);
+        //dd($request);
         /*Form validation*/
         if (
             $form_purchase->isSubmitted() && $form_purchase->isValid()
@@ -187,10 +190,11 @@ class ApplicationController extends AbstractController
 
         return $this->render('application/purchase.html.twig', [
             'title_logo' => 'Purchase',
-            'legend' => 'Purchase',
+            'legend' => 'Calculate price',
+            'legend_purchase' => 'Purchase',
             'arr_products' => $arr_products,
             'form_purchase' => $form_purchase->createView(),
-            'form_buy' => $form_purchase->createView(),
+            'form_buy' => $form_buy->createView(),
             'arr_error' => $arr_error,
             'find_Product' => $find_Product,
             'find_one_by_coupon' => $find_one_by_coupon,
@@ -199,10 +203,82 @@ class ApplicationController extends AbstractController
     }
 
 
+    #[Route('/buy', name: 'buy')]
+    public function Duy(Request $request, ValidatorInterface $validator): Response
+    {
+
+        $payment_processor = new StripePaymentProcessor;
+        /* Connecting the form */
+        $form_buy = $this->createForm(PurchaseType::class);
+
+        $form_buy->handleRequest($request);
+
+        /* Подключаем валидацию  */
+        $errors_buy = $validator->validate($form_buy);
+        // dd($request);
+        if (
+            $form_buy->isSubmitted() && $form_buy->isValid()
+        ) {
+
+            $payment_preg_replace = strtolower(preg_replace(
+                '#[^\d/.,]#',
+                '',
+                $request->request->all()['purchase']['payment']
+            ));
+
+            $total_amount_preg_replace = preg_replace(
+                '#[^\d/.,]#',
+                '',
+                $request->request->all()['purchase']['total_amount']
+            );
+
+            $percentage_of_payment = (100 / $total_amount_preg_replace) * $payment_preg_replace;
+
+            if ($percentage_of_payment > 100) {
+                $this->addFlash(
+                    'payment',
+                    'Incorrect amount.'
+                );
+            }
+
+            $pay = $payment_processor->processPayment($percentage_of_payment);
+            if ($pay) {
+                $this->addFlash(
+                    'payment',
+                    'Payment has passed.'
+                );
+            } else {
+                $this->addFlash(
+                    'payment',
+                    'Incorrect amount.'
+                );
+            }
+
+            //dd($pay);
+            return $this->redirectToRoute('purchase');
+        } else {
+
+            //dd($errors_buy);
+            /*We record validation errors in the session*/
+            if ($errors_buy) {
+                foreach ($errors_buy as $key) {
+                    $message = $key->getmessage();
+                    $propertyPath = $key->getpropertyPath() . '_buy';
+                    //dd($propertyPath);
+                    $this->addFlash(
+                        $propertyPath,
+                        $message
+                    );
+                }
+            }
+            return $this->redirectToRoute('purchase');
+        }
+    }
+
     /* функция сброса */
     #[Route('/reset', name: 'reset')]
     public function ResetPart(): Response
     {
-        return $this->redirectToRoute('home_page');
+        return $this->redirectToRoute('calculate-price');
     }
 }

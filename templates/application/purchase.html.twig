@@ -8,6 +8,8 @@
 
 {% block legend %}{{legend}}{% endblock legend%}
 
+{% block legend_purchase %}{{legend_purchase}}{% endblock legend_purchase %}
+
 {% block name_product %}
     {% for value_product in arr_products %} 
 
@@ -24,10 +26,10 @@
     {% endfor %}
 {% endblock price_product %}
 
-{% block h2 %}
+{% block h2_calculate_price %}
     <br><h2>Select the product, if available, specify the discount coupon, 
-    specify the tax number, payment method</h2></br>
-{% endblock h2 %}
+    specify the tax number</h2>
+{% endblock h2_calculate_price %}
 
 {% block form_calculate_price %} 
 
@@ -71,12 +73,11 @@
             <th>Coupon</th>
             <th>Tax</th>
             <th>Total amount</th>
-            <th>Payment method</th>
-            <th>Action</th>
 {% endif %}
 {% endblock table_calculate_price %}
 
 {% block tbody_calculate_price %}
+
     <tr>
         {% if find_Product is not empty %}
 
@@ -93,27 +94,75 @@
 
             <td>{{ find_one_by_tax.getTaxRate()|default('') }} %</td>
 
-                {% if find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 1 %}
-                    <td>{{ (find_Product.getPriceProduct() 
+                <td>{% if find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 1 %}
+                    {{ (find_Product.getPriceProduct() 
                             - (find_Product.getPriceProduct() / 100 * find_one_by_coupon.getDiscount()))
                                 + ((find_Product.getPriceProduct() - (find_Product.getPriceProduct() 
                                     / 100 * find_one_by_coupon.getDiscount()))
-                      / 100 * find_one_by_tax.getTaxRate()) }}</td>
+                      / 100 * find_one_by_tax.getTaxRate()) }}
                 {% elseif find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 2 %}
-                    <td>{{ (find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
+                    {{ (find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
                      + ((find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
-                      / 100 * find_one_by_tax.getTaxRate()) }}</td>
-                {% else %}   
-                    <td>{{ find_Product.getPriceProduct() + (find_Product.getPriceProduct() / 100 * find_one_by_tax.getTaxRate()) }}</td>
-                {% endif %}
-
-            {{ form_start(form_calculate_price, {'action': path('reset')}) }}
-
-            <td>{{ form_widget(form_reset.button, { 'label': 'Buy', 'attr': {'class': 'reset'} }) }}</td>
-
-            {{ form_end(form_calculate_price) }}
-
+                      / 100 * find_one_by_tax.getTaxRate()) }}
+                {% else %}  
+                    {{ find_Product.getPriceProduct() 
+                        + (find_Product.getPriceProduct() / 100 * find_one_by_tax.getTaxRate()) }}
+                {% endif %} euro</td>
         {% endif %}
-    </tr>   
-                
+    </tr> 
+   {#} {{ dump(value_total_amount) }}#}
 {% endblock tbody_calculate_price %}
+
+{% block h2_purchase %}
+<br><h2>Enter the amount and click pay</h2>                  
+{% endblock h2_purchase %}
+
+{% block form_purchase %}
+
+{% set value_total_amount = '' %}
+ 
+{% if find_Product is not empty %}
+
+    {% if find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 1 %}
+        {% set value_total_amount %}
+            {{ (find_Product.getPriceProduct() 
+                - (find_Product.getPriceProduct() / 100 * find_one_by_coupon.getDiscount()))
+                    + ((find_Product.getPriceProduct() - (find_Product.getPriceProduct() 
+                        / 100 * find_one_by_coupon.getDiscount()))
+                            / 100 * find_one_by_tax.getTaxRate()) }}
+        {% endset %}           
+    {% elseif find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 2 %}
+        {% set value_total_amount %}
+            {{ (find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
+                + ((find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
+                    / 100 * find_one_by_tax.getTaxRate()) }}
+        {% endset %}
+    {% else %}  
+        {% set value_total_amount %}
+            {{ find_Product.getPriceProduct() 
+                + (find_Product.getPriceProduct() / 100 * find_one_by_tax.getTaxRate()) }}
+        {% endset %}
+    {% endif %}
+{% endif %}
+
+{#{{ dump(app.flashes()) }}#}
+    {{ form_start(form_buy, {'action': path('buy')}) }}
+
+        <th>{{ form_widget(form_buy.payment) }} euro<br>
+        {% for message in app.flashes('children[payment].data_buy') %}
+            {{ message }}
+        {% endfor %}
+        {% for message in app.flashes('children[payment]_buy') %}
+            {{ message }}
+        {% endfor %}
+        {% for message in app.flashes('payment') %}
+            {{ message }}
+        {% endfor %}</th>
+
+        {{ form_widget(form_buy.total_amount, {value : value_total_amount }) }}
+
+        <th>{{ form_widget(form_buy.button, { 'label': 'Pay', 'attr': {'class': 'reset'} }) }}</th>
+
+    {{ form_end(form_buy) }}       
+  
+{% endblock form_purchase %}               

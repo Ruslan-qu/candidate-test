@@ -7,8 +7,12 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class PurchaseType extends AbstractType
@@ -16,34 +20,19 @@ class PurchaseType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('products', EntityType::class, [
-                'label' => 'Products',
-                'class' => Products::class,
-                'choice_label' => 'name_product',
-            ])
 
-            ->add('coupons', TextType::class, [
-                'label' => 'Coupons',
-                'required' => false,
+            ->add('payment', NumberType::class, [
+                'label' => false,
                 'constraints' => [
                     new Regex([
-                        'pattern' => '/^([a-z]{1}[0-9]{2})?$/i',
-                        'message' => 'The form contains an invalid number'
+                        'pattern' => '/^[\d]+[\.,]?[\d]{0,2}$/',
+                        'message' => 'The form contains an invalid character'
                     ]),
+                    new NotBlank(['message' => 'The form contains an invalid character']),
                 ],
             ])
 
-            ->add('taxes', TextType::class, [
-                'label' => 'Taxes',
-                'constraints' => [
-                    new Regex([
-                        'pattern' => '/^([a-z]{2}([a-z|0-9]{2})?[0-9]{9})?$/i',
-                        'message' => 'The form contains an invalid number'
-                    ]),
-                ],
-            ])
-
-
+            ->add('total_amount', HiddenType::class)
 
             ->add('button', SubmitType::class);
     }

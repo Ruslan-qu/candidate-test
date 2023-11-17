@@ -91,19 +91,19 @@
 
             <td>{{ find_one_by_tax.getTaxRate()|default('') }} %</td>
 
-                {% if find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 1 %}
-                    <td>{{ (find_Product.getPriceProduct() 
+                <td>{% if find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 1 %}
+                    {{ (find_Product.getPriceProduct() 
                             - (find_Product.getPriceProduct() / 100 * find_one_by_coupon.getDiscount()))
                                 + ((find_Product.getPriceProduct() - (find_Product.getPriceProduct() 
                                     / 100 * find_one_by_coupon.getDiscount()))
-                      / 100 * find_one_by_tax.getTaxRate()) }}</td>
+                      / 100 * find_one_by_tax.getTaxRate()) }}
                 {% elseif find_one_by_coupon is not empty and find_one_by_coupon.getIdTypeCoupon().getId() == 2 %}
-                    <td>{{ (find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
+                    {{ (find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
                      + ((find_Product.getPriceProduct() - find_one_by_coupon.getDiscount())
-                      / 100 * find_one_by_tax.getTaxRate()) }}</td>
+                      / 100 * find_one_by_tax.getTaxRate()) }}
                 {% else %}   
-                    <td>{{ find_Product.getPriceProduct() + (find_Product.getPriceProduct() / 100 * find_one_by_tax.getTaxRate()) }}</td>
-                {% endif %}
+                    {{ find_Product.getPriceProduct() + (find_Product.getPriceProduct() / 100 * find_one_by_tax.getTaxRate()) }}
+                {% endif %} euro</td>
 
             {{ form_start(form_calculate_price, {'action': path('reset')}) }}
 
