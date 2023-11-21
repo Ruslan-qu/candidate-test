@@ -22,7 +22,11 @@ class ApplicationController extends AbstractController
     public function CalculatePrice(
         ManagerRegistry $doctrine,
         Request $request,
+        ValidatorInterface $validator
     ): Response {
+
+        /* class JsonResponse*/
+        $response = new JsonResponse;
 
         /* array for error messages */
         $arr_error = [];
@@ -40,63 +44,88 @@ class ApplicationController extends AbstractController
 
         $form_calculate_price->handleRequest($request);
 
+        /* Errors validation */
+        $errors_calculate_price = $validator->validate($form_calculate_price);
+
         /*Form validation*/
         if (
-            $form_calculate_price->isSubmitted() && $form_calculate_price->isValid()
+            $form_calculate_price->isSubmitted()
         ) {
+            if ($form_calculate_price->isValid()) {
+                # code...
 
-            $idProduct = $request->request->all()['calculate_price']['products'];
+                $idProduct = $request->request->all()['calculate_price']['products'];
 
-            $number_coupon = strtolower(preg_replace(
-                '#\s#',
-                '',
-                $request->request->all()['calculate_price']['coupons']
-            ));
+                $number_coupon = strtolower(preg_replace(
+                    '#\s#',
+                    '',
+                    $request->request->all()['calculate_price']['coupons']
+                ));
 
-            $taxe = strtolower(preg_replace(
-                '#\s#',
-                '',
-                $request->request->all()['calculate_price']['taxes']
-            ));
-            $tax_number = substr($taxe, 0, 2);
+                $taxe = strtolower(preg_replace(
+                    '#\s#',
+                    '',
+                    $request->request->all()['calculate_price']['taxes']
+                ));
+                $tax_number = substr($taxe, 0, 2);
 
-            $сount_coupon = $doctrine->getRepository(Coupons::class)
-                ->count(['number_coupon' => $number_coupon]);
+                $сount_coupon = $doctrine->getRepository(Coupons::class)
+                    ->count(['number_coupon' => $number_coupon]);
 
-            $сount_taxe = $doctrine->getRepository(Taxes::class)
-                ->count(['tax_number' => $tax_number]);
+                $сount_taxe = $doctrine->getRepository(Taxes::class)
+                    ->count(['tax_number' => $tax_number]);
 
-            /*checking numbers in the database*/
-            if ($сount_coupon != 0) {
+                /*checking numbers in the database*/
+                if ($сount_coupon != 0) {
 
-                $find_one_by_coupon = $doctrine->getRepository(Coupons::class)
-                    ->findOneBy(['number_coupon' => $number_coupon]);
-            } else {
-                if (!empty($number_coupon)) {
-                    $arr_error['coupon'] = 'there is no such number';
+                    $find_one_by_coupon = $doctrine->getRepository(Coupons::class)
+                        ->findOneBy(['number_coupon' => $number_coupon]);
+                } else {
+                    if (!empty($number_coupon)) {
+                        $arr_error['coupon'] = 'there is no such number';
+                    }
                 }
-            }
-            /*checking numbers in the database*/
-            if ($сount_taxe != 0) {
+                /*checking numbers in the database*/
+                if ($сount_taxe != 0) {
 
-                $find_one_by_tax = $doctrine->getRepository(Taxes::class)
-                    ->findOneBy(['tax_number' => $tax_number]);
-            } else {
-                if (!empty($tax_number)) {
+                    $find_one_by_tax = $doctrine->getRepository(Taxes::class)
+                        ->findOneBy(['tax_number' => $tax_number]);
+                } else {
+                    if (!empty($tax_number)) {
 
-                    $arr_error['taxe'] = 'there is no such number';
+                        $arr_error['taxe'] = 'there is no such number';
+                    }
                 }
-            }
 
-            if (empty($arr_error)) {
+                if (empty($arr_error)) {
 
-                $find_Product = $doctrine->getRepository(Products::class)->find($idProduct);
+                    $find_Product = $doctrine->getRepository(Products::class)->find($idProduct);
+                } else {
+                    $response->setStatusCode(400);
+                    if ($arr_error) {
+                        foreach ($arr_error as $value) {
+                            $message = $value;
+                            $response->setData(['error' => $message]);
+                        }
+                    }
+                }
+            } else {
+
+                $response->setStatusCode(400);
+                if ($errors_calculate_price) {
+                    foreach ($errors_calculate_price as $key) {
+                        $message = $key->getmessage();
+                        $response->setData(['error' => $message]);
+                    }
+                }
             }
         }
 
+        //dd($response);
         return $this->render('application/calculate-price.html.twig', [
             'title_logo' => 'Calculate price',
             'legend' => 'Calculate price',
+            'legend_response' => 'Response',
             'arr_products' => $arr_products,
             'form_calculate_price' => $form_calculate_price->createView(),
             'form_reset' => $form_calculate_price->createView(),
@@ -104,6 +133,7 @@ class ApplicationController extends AbstractController
             'find_Product' => $find_Product,
             'find_one_by_coupon' => $find_one_by_coupon,
             'find_one_by_tax' => $find_one_by_tax,
+            'response' => $response,
         ]);
     }
 
@@ -112,8 +142,12 @@ class ApplicationController extends AbstractController
     public function Purchase(
         ManagerRegistry $doctrine,
         Request $request,
+        ValidatorInterface $validator,
     ): Response {
-        //dd($request);
+
+        /* class JsonResponse*/
+        $response = new JsonResponse;
+
         /* array for error messages */
         $arr_error = [];
 
@@ -131,58 +165,81 @@ class ApplicationController extends AbstractController
 
         $form_purchase->handleRequest($request);
         $form_buy->handleRequest($request);
+
+        /* Errors validation */
+        $errors_purchase = $validator->validate($form_purchase);
+        $errors_cbuy = $validator->validate($form_buy);
         //dd($request);
         /*Form validation*/
         if (
-            $form_purchase->isSubmitted() && $form_purchase->isValid()
+            $form_purchase->isSubmitted()
         ) {
+            if ($form_purchase->isValid()) {
 
-            $idProduct = $request->request->all()['calculate_price']['products'];
+                $idProduct = $request->request->all()['calculate_price']['products'];
 
-            $number_coupon = strtolower(preg_replace(
-                '#\s#',
-                '',
-                $request->request->all()['calculate_price']['coupons']
-            ));
+                $number_coupon = strtolower(preg_replace(
+                    '#\s#',
+                    '',
+                    $request->request->all()['calculate_price']['coupons']
+                ));
 
-            $taxe = strtolower(preg_replace(
-                '#\s#',
-                '',
-                $request->request->all()['calculate_price']['taxes']
-            ));
-            $tax_number = substr($taxe, 0, 2);
+                $taxe = strtolower(preg_replace(
+                    '#\s#',
+                    '',
+                    $request->request->all()['calculate_price']['taxes']
+                ));
+                $tax_number = substr($taxe, 0, 2);
 
-            $сount_coupon = $doctrine->getRepository(Coupons::class)
-                ->count(['number_coupon' => $number_coupon]);
+                $сount_coupon = $doctrine->getRepository(Coupons::class)
+                    ->count(['number_coupon' => $number_coupon]);
 
-            $сount_taxe = $doctrine->getRepository(Taxes::class)
-                ->count(['tax_number' => $tax_number]);
+                $сount_taxe = $doctrine->getRepository(Taxes::class)
+                    ->count(['tax_number' => $tax_number]);
 
-            /*checking numbers in the database*/
-            if ($сount_coupon != 0) {
+                /*checking numbers in the database*/
+                if ($сount_coupon != 0) {
 
-                $find_one_by_coupon = $doctrine->getRepository(Coupons::class)
-                    ->findOneBy(['number_coupon' => $number_coupon]);
-            } else {
-                if (!empty($number_coupon)) {
-                    $arr_error['coupon'] = 'there is no such number';
+                    $find_one_by_coupon = $doctrine->getRepository(Coupons::class)
+                        ->findOneBy(['number_coupon' => $number_coupon]);
+                } else {
+                    if (!empty($number_coupon)) {
+                        $arr_error['coupon'] = 'there is no such number';
+                    }
                 }
-            }
-            /*checking numbers in the database*/
-            if ($сount_taxe != 0) {
+                /*checking numbers in the database*/
+                if ($сount_taxe != 0) {
 
-                $find_one_by_tax = $doctrine->getRepository(Taxes::class)
-                    ->findOneBy(['tax_number' => $tax_number]);
-            } else {
-                if (!empty($tax_number)) {
+                    $find_one_by_tax = $doctrine->getRepository(Taxes::class)
+                        ->findOneBy(['tax_number' => $tax_number]);
+                } else {
+                    if (!empty($tax_number)) {
 
-                    $arr_error['taxe'] = 'there is no such number';
+                        $arr_error['taxe'] = 'there is no such number';
+                    }
                 }
-            }
 
-            if (empty($arr_error)) {
+                if (empty($arr_error)) {
 
-                $find_Product = $doctrine->getRepository(Products::class)->find($idProduct);
+                    $find_Product = $doctrine->getRepository(Products::class)->find($idProduct);
+                } else {
+                    $response->setStatusCode(400);
+                    if ($arr_error) {
+                        foreach ($arr_error as $value) {
+                            $message = $value;
+                            $response->setData(['error' => $message]);
+                        }
+                    }
+                }
+            } else {
+
+                $response->setStatusCode(400);
+                if ($errors_purchase) {
+                    foreach ($errors_purchase as $key) {
+                        $message = $key->getmessage();
+                        $response->setData(['error' => $message]);
+                    }
+                }
             }
         }
 
@@ -192,6 +249,7 @@ class ApplicationController extends AbstractController
             'title_logo' => 'Purchase',
             'legend' => 'Calculate price',
             'legend_purchase' => 'Purchase',
+            'legend_response' => 'Response',
             'arr_products' => $arr_products,
             'form_purchase' => $form_purchase->createView(),
             'form_buy' => $form_buy->createView(),
@@ -199,6 +257,7 @@ class ApplicationController extends AbstractController
             'find_Product' => $find_Product,
             'find_one_by_coupon' => $find_one_by_coupon,
             'find_one_by_tax' => $find_one_by_tax,
+            'response' => $response,
         ]);
     }
 

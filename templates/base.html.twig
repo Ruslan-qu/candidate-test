@@ -91,6 +91,17 @@
                                     </table> 
                            <fieldset>
                         </div> 
+                        <div class="form">
+                            <fieldset>
+                                <legend>{% block legend_response %}{% endblock legend_response %}</legend>
+                                    <table>
+                                        <tr>
+                                            {% block json_response %}
+                                            {% endblock json_response %}
+                                        </tr>
+                                    </table> 
+                           <fieldset>
+                        </div> 
                     {% endblock %}
                 </main>
             </div>

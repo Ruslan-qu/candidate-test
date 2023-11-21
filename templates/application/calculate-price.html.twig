@@ -8,6 +8,8 @@
 
 {% block legend %}{{legend}}{% endblock legend%}
 
+{% block legend_response %}{{legend_response}}{% endblock legend_response %}
+
 {% block name_product %}
     {% for value_product in arr_products %} 
 
@@ -115,3 +117,10 @@
     </tr>   
                 
 {% endblock tbody_calculate_price %}
+
+{% block json_response %}
+    {#{{ dump(response) }}#}
+    <pre>
+        {{response}}
+    </pre>
+{% endblock json_response %}

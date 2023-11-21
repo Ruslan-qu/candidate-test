@@ -10,6 +10,8 @@
 
 {% block legend_purchase %}{{legend_purchase}}{% endblock legend_purchase %}
 
+{% block legend_response %}{{legend_response}}{% endblock legend_response %}
+
 {% block name_product %}
     {% for value_product in arr_products %} 
 
@@ -165,4 +167,10 @@
 
     {{ form_end(form_buy) }}       
   
-{% endblock form_purchase %}               
+{% endblock form_purchase %}   
+
+{% block json_response %}
+    <pre>
+        {{response}}
+    </pre>
+{% endblock json_response %}
