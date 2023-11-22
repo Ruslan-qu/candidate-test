@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Application;
 
-use App\Entity\Taxes;
-use App\Entity\Coupons;
-use App\Entity\Products;
-use App\Form\PurchaseType;
 use StripePaymentProcessor;
-use App\Form\CalculatePriceType;
+use App\Entity\Application\Taxes;
+use App\Entity\Application\Coupons;
+use App\Entity\Application\Products;
+use App\Form\Application\PurchaseType;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Form\Application\CalculatePriceType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -52,7 +52,6 @@ class ApplicationController extends AbstractController
             $form_calculate_price->isSubmitted()
         ) {
             if ($form_calculate_price->isValid()) {
-                # code...
 
                 $idProduct = $request->request->all()['calculate_price']['products'];
 
@@ -121,7 +120,6 @@ class ApplicationController extends AbstractController
             }
         }
 
-        //dd($response);
         return $this->render('application/calculate-price.html.twig', [
             'title_logo' => 'Calculate price',
             'legend' => 'Calculate price',
@@ -168,8 +166,7 @@ class ApplicationController extends AbstractController
 
         /* Errors validation */
         $errors_purchase = $validator->validate($form_purchase);
-        $errors_cbuy = $validator->validate($form_buy);
-        //dd($request);
+
         /*Form validation*/
         if (
             $form_purchase->isSubmitted()
@@ -243,8 +240,6 @@ class ApplicationController extends AbstractController
             }
         }
 
-
-
         return $this->render('application/purchase.html.twig', [
             'title_logo' => 'Purchase',
             'legend' => 'Calculate price',
@@ -266,7 +261,11 @@ class ApplicationController extends AbstractController
     public function Duy(Request $request, ValidatorInterface $validator): Response
     {
 
+        /* class JsonResponse*/
+        $response = new JsonResponse;
+
         $payment_processor = new StripePaymentProcessor;
+
         /* Connecting the form */
         $form_buy = $this->createForm(PurchaseType::class);
 
@@ -274,67 +273,70 @@ class ApplicationController extends AbstractController
 
         /* Подключаем валидацию  */
         $errors_buy = $validator->validate($form_buy);
-        // dd($request);
-        if (
-            $form_buy->isSubmitted() && $form_buy->isValid()
-        ) {
 
-            $payment_preg_replace = strtolower(preg_replace(
-                '#[^\d/.,]#',
-                '',
-                $request->request->all()['purchase']['payment']
-            ));
+        if ($form_buy->isSubmitted()) {
 
-            $total_amount_preg_replace = preg_replace(
-                '#[^\d/.,]#',
-                '',
-                $request->request->all()['purchase']['total_amount']
-            );
+            if ($form_buy->isValid()) {
 
-            $percentage_of_payment = (100 / $total_amount_preg_replace) * $payment_preg_replace;
-
-            if ($percentage_of_payment > 100) {
-                $this->addFlash(
-                    'payment',
-                    'Incorrect amount.'
+                $payment_preg_replace = preg_replace(
+                    '#[^\d/.,]#',
+                    '',
+                    $request->request->all()['purchase']['payment']
                 );
-            }
 
-            $pay = $payment_processor->processPayment($percentage_of_payment);
-            if ($pay) {
-                $this->addFlash(
-                    'payment',
-                    'Payment has passed.'
+                $total_amount_preg_replace = preg_replace(
+                    '#[^\d/.,]#',
+                    '',
+                    $request->request->all()['purchase']['total_amount']
                 );
-            } else {
-                $this->addFlash(
-                    'payment',
-                    'Incorrect amount.'
-                );
-            }
+                if (!empty($total_amount_preg_replace)) {
 
-            //dd($pay);
-            return $this->redirectToRoute('purchase');
-        } else {
 
-            //dd($errors_buy);
-            /*We record validation errors in the session*/
-            if ($errors_buy) {
-                foreach ($errors_buy as $key) {
-                    $message = $key->getmessage();
-                    $propertyPath = $key->getpropertyPath() . '_buy';
-                    //dd($propertyPath);
-                    $this->addFlash(
-                        $propertyPath,
-                        $message
-                    );
+                    $percentage_of_payment = (100 / $total_amount_preg_replace) * $payment_preg_replace;
+
+
+                    $pay = $payment_processor->processPayment($percentage_of_payment);
+                    if ($pay && $percentage_of_payment == 100) {
+                        $this->addFlash(
+                            'payment',
+                            'Payment has passed.'
+                        );
+                    } else {
+                        $this->addFlash(
+                            'payment',
+                            'Incorrect amount.'
+                        );
+                        $response->setStatusCode(400);
+                        $response->setData(['error' => 'Incorrect amount.']);
+                        $this->addFlash('response', $response);
+                    }
                 }
+
+                return $this->redirectToRoute('purchase');
+            } else {
+
+                $response->setStatusCode(400);
+                /*We record validation errors in the session*/
+                if ($errors_buy) {
+                    foreach ($errors_buy as $key) {
+                        $message = $key->getmessage();
+                        $propertyPath = $key->getpropertyPath() . '_buy';
+                        $this->addFlash(
+                            $propertyPath,
+                            $message
+                        );
+                        $response->setData(['error' => $message]);
+                    }
+                }
+
+                $this->addFlash('response', $response);
+
+                return $this->redirectToRoute('purchase');
             }
-            return $this->redirectToRoute('purchase');
         }
     }
 
-    /* функция сброса */
+    /* reset function */
     #[Route('/reset', name: 'reset')]
     public function ResetPart(): Response
     {

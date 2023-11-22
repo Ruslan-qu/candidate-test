@@ -112,7 +112,7 @@
                 {% endif %} euro</td>
         {% endif %}
     </tr> 
-   {#} {{ dump(value_total_amount) }}#}
+
 {% endblock tbody_calculate_price %}
 
 {% block h2_purchase %}
@@ -147,7 +147,6 @@
     {% endif %}
 {% endif %}
 
-{#{{ dump(app.flashes()) }}#}
     {{ form_start(form_buy, {'action': path('buy')}) }}
 
         <th>{{ form_widget(form_buy.payment) }} euro<br>
@@ -170,7 +169,15 @@
 {% endblock form_purchase %}   
 
 {% block json_response %}
-    <pre>
-        {{response}}
+{% set json_response = '' %}
+    <pre>   
+        {% for message in app.flashes('response') %}
+            {% set json_response = message %}
+        {% endfor %}
+        {% if json_response is not empty %}
+            {{ json_response }}
+        {% else %}
+            {{response}}
+        {% endif %}
     </pre>
 {% endblock json_response %}

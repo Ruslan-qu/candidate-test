@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Application;
 
-use App\Repository\CouponsRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Application\TypeCoupons;
+use App\Repository\Application\CouponsRepository;
 
 #[ORM\Entity(repositoryClass: CouponsRepository::class)]
 class Coupons

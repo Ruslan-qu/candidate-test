@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Application;
 
-use App\Repository\TaxesRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\Application\TaxesRepository;
 
 #[ORM\Entity(repositoryClass: TaxesRepository::class)]
 class Taxes

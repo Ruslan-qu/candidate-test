@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Form;
+namespace App\Form\Application;
 
-use App\Entity\Products;
+use App\Entity\Application\Products;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
