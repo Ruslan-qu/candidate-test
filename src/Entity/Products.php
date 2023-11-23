@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Entity\Application;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\Application\ProductsRepository;
+use App\Repository\ProductsRepository;
 
 #[ORM\Entity(repositoryClass: ProductsRepository::class)]
 class Products

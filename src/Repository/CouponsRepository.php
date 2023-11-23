@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Repository\Application;
+namespace App\Repository;
 
-use App\Entity\Application\Coupons;
+use App\Entity\Coupons;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 

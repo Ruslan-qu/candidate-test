@@ -3,9 +3,9 @@
 namespace App\Controller\Application;
 
 use StripePaymentProcessor;
-use App\Entity\Application\Taxes;
-use App\Entity\Application\Coupons;
-use App\Entity\Application\Products;
+use App\Entity\Taxes;
+use App\Entity\Coupons;
+use App\Entity\Products;
 use App\Form\Application\PurchaseType;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Form\Application\CalculatePriceType;
