@@ -5,6 +5,7 @@ namespace App\Controller\EndpointPurchase;
 use App\Entity\Taxes;
 use App\Entity\Coupons;
 use App\Entity\Products;
+use StripePaymentProcessor;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,11 +16,12 @@ use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Systemeio\TestForCandidates\PaymentProcessor\PaypalPaymentProcessor;
 
 class EndpointPurchaseController extends AbstractController
 {
     #[Route('/purchase/product/{product}/taxNumber/{taxNumber}/couponCode/{couponCode}/paymentProcessor/{paymentProcessor}')]
-    public function Purchase(
+    public function PurchaseWithACoupon(
         ManagerRegistry $doctrine,
         Request $request,
         ValidatorInterface $validator,
@@ -29,11 +31,8 @@ class EndpointPurchaseController extends AbstractController
         $paymentProcessor,
     ): Response {
 
-
         /* class JsonResponse*/
         $response = new JsonResponse;
-
-        //dd($request);
 
         /* Enabling validation and prescribing the validation condition and error message */
         $validator = Validation::createValidator();
@@ -42,6 +41,7 @@ class EndpointPurchaseController extends AbstractController
             'product_error' => $product,
             'taxNumber_error' => $taxNumber,
             'couponCode_error' => $couponCode,
+            'paymentProcessor' => $paymentProcessor,
         ];
 
         $constraint = new Collection([
@@ -57,10 +57,14 @@ class EndpointPurchaseController extends AbstractController
                 'pattern' => '/^([a-z]{1}[0-9]{2})?$/i',
                 'message' => 'The form contains an invalid number'
             ]),
+            'paymentProcessor' => new Regex([
+                'pattern' => '/^[a-z]+$/i',
+                'message' => 'The form contains an invalid number'
+            ]),
         ]);
 
         $errors_regex = $validator->validate($input, $constraint);
-        //dd($errors);
+
         /* Validation */
         if (!$errors_regex->count()) {
 
@@ -70,6 +74,8 @@ class EndpointPurchaseController extends AbstractController
 
             $taxe = strtolower($taxNumber);
             $tax_number = substr($taxe, 0, 2);
+
+            $payment_processor = strtolower($paymentProcessor);
 
             $сount_product = $doctrine->getRepository(Products::class)
                 ->count(['name_product' => $name_product]);
@@ -114,6 +120,19 @@ class EndpointPurchaseController extends AbstractController
                 return new Response('<html><body><pre>' . $response . '</pre></body></html>');
             }
 
+            if ($payment_processor == 'paypal') {
+
+                $paypal = new PaypalPaymentProcessor;
+            } elseif ($payment_processor == 'stripe') {
+
+                $stripe = new StripePaymentProcessor;
+            } else {
+
+                $response->setStatusCode(400);
+                $response->setData(['error' => 'incorrectly specified payment method']);
+                return new Response('<html><body><pre>' . $response . '</pre></body></html>');
+            }
+
             //dd($find_one_by_coupon);
 
             $price_product = $find_one_by_product->getPriceProduct();
@@ -150,13 +169,14 @@ class EndpointPurchaseController extends AbstractController
         }
     }
 
-    #[Route('/calculate-price/product/{product}/taxNumber/{taxNumber}/paymentProcessor/{paymentProcessor}')]
-    public function CalculatePriceWithoutCoupon(
+    #[Route('/purchase/product/{product}/taxNumber/{taxNumber}/paymentProcessor/{paymentProcessor}')]
+    public function PurchaseWithoutCoupon(
         ManagerRegistry $doctrine,
         Request $request,
         ValidatorInterface $validator,
         $product,
         $taxNumber,
+        $paymentProcessor,
     ): Response {
 
         /* class JsonResponse*/
@@ -168,6 +188,7 @@ class EndpointPurchaseController extends AbstractController
         $input = [
             'product_error' => $product,
             'taxNumber_error' => $taxNumber,
+            'paymentProcessor' => $paymentProcessor,
         ];
 
         $constraint = new Collection([
@@ -177,6 +198,10 @@ class EndpointPurchaseController extends AbstractController
             ]),
             'taxNumber_error' => new Regex([
                 'pattern' => '/^([a-z]{2}([a-z|0-9]{2})?[0-9]{9}){1}$/i',
+                'message' => 'The form contains an invalid number'
+            ]),
+            'paymentProcessor' => new Regex([
+                'pattern' => '/^[a-z]+$/i',
                 'message' => 'The form contains an invalid number'
             ]),
         ]);
@@ -190,6 +215,8 @@ class EndpointPurchaseController extends AbstractController
 
             $taxe = strtolower($taxNumber);
             $tax_number = substr($taxe, 0, 2);
+
+            $payment_processor = strtolower($paymentProcessor);
 
             $сount_product = $doctrine->getRepository(Products::class)
                 ->count(['name_product' => $name_product]);
@@ -217,6 +244,19 @@ class EndpointPurchaseController extends AbstractController
 
                 $response->setStatusCode(400);
                 $response->setData(['error' => 'there is no such number']);
+                return new Response('<html><body><pre>' . $response . '</pre></body></html>');
+            }
+
+            if ($payment_processor == 'paypal') {
+
+                $paypal = new PaypalPaymentProcessor;
+            } elseif ($payment_processor == 'stripe') {
+
+                $stripe = new StripePaymentProcessor;
+            } else {
+
+                $response->setStatusCode(400);
+                $response->setData(['error' => 'incorrectly specified payment method']);
                 return new Response('<html><body><pre>' . $response . '</pre></body></html>');
             }
 

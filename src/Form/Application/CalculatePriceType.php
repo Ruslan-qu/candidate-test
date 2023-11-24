@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class CalculatePriceType extends AbstractType
@@ -47,6 +48,14 @@ class CalculatePriceType extends AbstractType
                         'message' => 'The form contains an invalid number'
                     ]),
                     new NotBlank(['message' => 'The form contains an invalid character']),
+                ],
+            ])
+
+            ->add('payment_processor', ChoiceType::class, [
+                'label' => 'Payment methods',
+                'choices'  => [
+                    'Paypal' => 'Paypal',
+                    'Stripe' => 'Stripe',
                 ],
             ])
 

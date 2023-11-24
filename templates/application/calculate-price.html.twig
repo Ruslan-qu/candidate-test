@@ -58,6 +58,8 @@
         {% endfor %}
         {{ form_errors(form_calculate_price.taxes) }}</th>
 
+        {% do form_widget(form_calculate_price.payment_processor) %}
+
          <th>{{ form_widget(form_calculate_price.button, { 'label': 'Calculate', 'attr': {'class': 'save'} }) }}</th>
 
     {{ form_end(form_calculate_price) }}

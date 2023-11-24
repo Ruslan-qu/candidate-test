@@ -1,0 +1,3 @@
+<?php //App%255CController%255CEndpointCalculatePrice%255CEndpointCalculatePriceController
+
+return [PHP_INT_MAX, []];

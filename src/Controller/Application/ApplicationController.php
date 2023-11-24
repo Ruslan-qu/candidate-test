@@ -2,11 +2,10 @@
 
 namespace App\Controller\Application;
 
-use StripePaymentProcessor;
 use App\Entity\Taxes;
 use App\Entity\Coupons;
 use App\Entity\Products;
-use App\Form\Application\PurchaseType;
+use StripePaymentProcessor;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Form\Application\CalculatePriceType;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Systemeio\TestForCandidates\PaymentProcessor\PaypalPaymentProcessor;
 
 class ApplicationController extends AbstractController
 {
@@ -153,16 +153,15 @@ class ApplicationController extends AbstractController
         $find_Product = '';
         $find_one_by_coupon = '';
         $find_one_by_tax = '';
+        $payment_methods = '';
 
         /* array for displaying a list of products with prices */
         $arr_products = $doctrine->getRepository(Products::class)->findAll();
 
         /* Connecting the form */
         $form_purchase = $this->createForm(CalculatePriceType::class);
-        $form_buy = $this->createForm(PurchaseType::class);
 
         $form_purchase->handleRequest($request);
-        $form_buy->handleRequest($request);
 
         /* Errors validation */
         $errors_purchase = $validator->validate($form_purchase);
@@ -187,6 +186,8 @@ class ApplicationController extends AbstractController
                     $request->request->all()['calculate_price']['taxes']
                 ));
                 $tax_number = substr($taxe, 0, 2);
+
+                $payment_methods = $request->request->all()['calculate_price']['payment_processor'];
 
                 $сount_coupon = $doctrine->getRepository(Coupons::class)
                     ->count(['number_coupon' => $number_coupon]);
@@ -228,6 +229,14 @@ class ApplicationController extends AbstractController
                         }
                     }
                 }
+
+                if ($payment_methods == 'Paypal') {
+
+                    $paypal = new PaypalPaymentProcessor;
+                } elseif ($payment_methods == 'Stripe') {
+
+                    $stripe = new StripePaymentProcessor;
+                }
             } else {
 
                 $response->setStatusCode(400);
@@ -243,98 +252,18 @@ class ApplicationController extends AbstractController
         return $this->render('application/purchase.html.twig', [
             'title_logo' => 'Purchase',
             'legend' => 'Calculate price',
-            'legend_purchase' => 'Purchase',
             'legend_response' => 'Response',
             'arr_products' => $arr_products,
             'form_purchase' => $form_purchase->createView(),
-            'form_buy' => $form_buy->createView(),
             'arr_error' => $arr_error,
             'find_Product' => $find_Product,
             'find_one_by_coupon' => $find_one_by_coupon,
             'find_one_by_tax' => $find_one_by_tax,
+            'payment_methods' => $payment_methods,
             'response' => $response,
         ]);
     }
 
-
-    #[Route('/buy', name: 'buy')]
-    public function Duy(Request $request, ValidatorInterface $validator): Response
-    {
-
-        /* class JsonResponse*/
-        $response = new JsonResponse;
-
-        $payment_processor = new StripePaymentProcessor;
-
-        /* Connecting the form */
-        $form_buy = $this->createForm(PurchaseType::class);
-
-        $form_buy->handleRequest($request);
-
-        /* Подключаем валидацию  */
-        $errors_buy = $validator->validate($form_buy);
-
-        if ($form_buy->isSubmitted()) {
-
-            if ($form_buy->isValid()) {
-
-                $payment_preg_replace = preg_replace(
-                    '#[^\d/.,]#',
-                    '',
-                    $request->request->all()['purchase']['payment']
-                );
-
-                $total_amount_preg_replace = preg_replace(
-                    '#[^\d/.,]#',
-                    '',
-                    $request->request->all()['purchase']['total_amount']
-                );
-                if (!empty($total_amount_preg_replace)) {
-
-
-                    $percentage_of_payment = (100 / $total_amount_preg_replace) * $payment_preg_replace;
-
-
-                    $pay = $payment_processor->processPayment($percentage_of_payment);
-                    if ($pay && $percentage_of_payment == 100) {
-                        $this->addFlash(
-                            'payment',
-                            'Payment has passed.'
-                        );
-                    } else {
-                        $this->addFlash(
-                            'payment',
-                            'Incorrect amount.'
-                        );
-                        $response->setStatusCode(400);
-                        $response->setData(['error' => 'Incorrect amount.']);
-                        $this->addFlash('response', $response);
-                    }
-                }
-
-                return $this->redirectToRoute('purchase');
-            } else {
-
-                $response->setStatusCode(400);
-                /*We record validation errors in the session*/
-                if ($errors_buy) {
-                    foreach ($errors_buy as $key) {
-                        $message = $key->getmessage();
-                        $propertyPath = $key->getpropertyPath() . '_buy';
-                        $this->addFlash(
-                            $propertyPath,
-                            $message
-                        );
-                        $response->setData(['error' => $message]);
-                    }
-                }
-
-                $this->addFlash('response', $response);
-
-                return $this->redirectToRoute('purchase');
-            }
-        }
-    }
 
     /* reset function */
     #[Route('/reset', name: 'reset')]
