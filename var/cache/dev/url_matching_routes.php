@@ -51,7 +51,7 @@ return [
     ],
     [ // $dynamicRoutes
         83 => [[['_route' => 'app_endpointcalculateprice_endpointcalculateprice_calculatepricewithacoupon', '_controller' => 'App\\Controller\\EndpointCalculatePrice\\EndpointCalculatePriceController::CalculatePriceWithACoupon'], ['product', 'taxNumber', 'couponCode'], null, null, false, true, null]],
-        90 => [[['_route' => 'app_endpointcalculateprice_endpointcalculateprice_calculatepricewithoutcoupon', '_controller' => 'App\\Controller\\EndpointCalculatePrice\\EndpointCalculatePriceController::CalculatePriceWithoutCoupon'], ['product', 'taxNumber'], ['POST' => 0, 'GET' => 1], null, false, true, null]],
+        90 => [[['_route' => 'app_endpointcalculateprice_endpointcalculateprice_calculatepricewithoutcoupon', '_controller' => 'App\\Controller\\EndpointCalculatePrice\\EndpointCalculatePriceController::CalculatePriceWithoutCoupon'], ['product', 'taxNumber'], null, null, false, true, null]],
         192 => [[['_route' => 'app_endpointpurchase_endpointpurchase_purchasewithacoupon', '_controller' => 'App\\Controller\\EndpointPurchase\\EndpointPurchaseController::PurchaseWithACoupon'], ['product', 'taxNumber', 'couponCode', 'paymentProcessor'], null, null, false, true, null]],
         225 => [[['_route' => 'app_endpointpurchase_endpointpurchase_purchasewithoutcoupon', '_controller' => 'App\\Controller\\EndpointPurchase\\EndpointPurchaseController::PurchaseWithoutCoupon'], ['product', 'taxNumber', 'paymentProcessor'], null, null, false, true, null]],
         265 => [[['_route' => '_preview_error', '_controller' => 'error_controller::preview', '_format' => 'html'], ['code', '_format'], null, null, false, true, null]],

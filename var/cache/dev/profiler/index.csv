@@ -740,3 +740,5 @@ aa85cb,172.18.0.1,GET,http://127.0.0.1/calculate-price/product/Iphone/taxNumber/
 f8297c,172.18.0.1,POST,http://127.0.0.1/calculate-price,1700835429,,200
 b4a0a1,172.18.0.1,GET,http://127.0.0.1/calculate-price/product/Iphone/taxNumber/de123456789,1700836266,,200
 8d20a1,172.18.0.1,GET,http://127.0.0.1/calculate-price/product/Iphone/taxNumber/de123456789,1700836286,,200
+45248e,172.18.0.1,GET,http://127.0.0.1/purchase,1700839975,,200
+2d7c79,172.18.0.1,POST,http://127.0.0.1/purchase,1700839984,,200
