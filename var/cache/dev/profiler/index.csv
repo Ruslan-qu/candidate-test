@@ -742,3 +742,10 @@ b4a0a1,172.18.0.1,GET,http://127.0.0.1/calculate-price/product/Iphone/taxNumber/
 8d20a1,172.18.0.1,GET,http://127.0.0.1/calculate-price/product/Iphone/taxNumber/de123456789,1700836286,,200
 45248e,172.18.0.1,GET,http://127.0.0.1/purchase,1700839975,,200
 2d7c79,172.18.0.1,POST,http://127.0.0.1/purchase,1700839984,,200
+2b00be,172.18.0.1,GET,http://127.0.0.1/calculate-price,1707126650,9fd285,500
+9fd285,172.18.0.1,GET,http://127.0.0.1/calculate-price,1707126650,,500
+d6414f,172.18.0.1,GET,http://127.0.0.1/,1707126720,,200
+e3e2ab,172.18.0.1,GET,http://127.0.0.1/calculate-price,1707126918,7b310c,500
+7b310c,172.18.0.1,GET,http://127.0.0.1/calculate-price,1707126918,,500
+2c1875,172.18.0.1,GET,http://127.0.0.1/calculate-price,1707128282,,200
+94b600,172.18.0.1,GET,http://localhost/,1707128304,,200

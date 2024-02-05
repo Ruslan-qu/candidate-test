@@ -415,15 +415,16 @@ class ComposerStaticInitfd0115627e097aebd3ce530b8a36e4bb
     );
 
     public static $classMap = array (
-        'App\\Controller\\ApplicationController' => __DIR__ . '/../..' . '/src/Controller/ApplicationController.php',
-        'App\\Controller\\HomePageController' => __DIR__ . '/../..' . '/src/Controller/HomePageController.php',
+        'App\\Controller\\Api\\EndpointCalculatePriceController' => __DIR__ . '/../..' . '/src/Controller/Api/EndpointCalculatePriceController.php',
+        'App\\Controller\\Api\\EndpointPurchaseController' => __DIR__ . '/../..' . '/src/Controller/Api/EndpointPurchaseController.php',
+        'App\\Controller\\Application\\ApplicationController' => __DIR__ . '/../..' . '/src/Controller/Application/ApplicationController.php',
+        'App\\Controller\\Application\\HomePageController' => __DIR__ . '/../..' . '/src/Controller/Application/HomePageController.php',
         'App\\Controller\\Test\\HealthCheckAction' => __DIR__ . '/../..' . '/src/Controller/Test/HealthCheckAction.php',
         'App\\Entity\\Coupons' => __DIR__ . '/../..' . '/src/Entity/Coupons.php',
         'App\\Entity\\Products' => __DIR__ . '/../..' . '/src/Entity/Products.php',
         'App\\Entity\\Taxes' => __DIR__ . '/../..' . '/src/Entity/Taxes.php',
         'App\\Entity\\TypeCoupons' => __DIR__ . '/../..' . '/src/Entity/TypeCoupons.php',
-        'App\\Form\\CalculatePriceType' => __DIR__ . '/../..' . '/src/Form/CalculatePriceType.php',
-        'App\\Form\\PurchaseType' => __DIR__ . '/../..' . '/src/Form/PurchaseType.php',
+        'App\\Form\\Application\\CalculatePriceType' => __DIR__ . '/../..' . '/src/Form/Application/CalculatePriceType.php',
         'App\\Kernel' => __DIR__ . '/../..' . '/src/Kernel.php',
         'App\\Repository\\CouponsRepository' => __DIR__ . '/../..' . '/src/Repository/CouponsRepository.php',
         'App\\Repository\\ProductsRepository' => __DIR__ . '/../..' . '/src/Repository/ProductsRepository.php',

@@ -6,15 +6,16 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'App\\Controller\\ApplicationController' => $baseDir . '/src/Controller/ApplicationController.php',
-    'App\\Controller\\HomePageController' => $baseDir . '/src/Controller/HomePageController.php',
+    'App\\Controller\\Api\\EndpointCalculatePriceController' => $baseDir . '/src/Controller/Api/EndpointCalculatePriceController.php',
+    'App\\Controller\\Api\\EndpointPurchaseController' => $baseDir . '/src/Controller/Api/EndpointPurchaseController.php',
+    'App\\Controller\\Application\\ApplicationController' => $baseDir . '/src/Controller/Application/ApplicationController.php',
+    'App\\Controller\\Application\\HomePageController' => $baseDir . '/src/Controller/Application/HomePageController.php',
     'App\\Controller\\Test\\HealthCheckAction' => $baseDir . '/src/Controller/Test/HealthCheckAction.php',
     'App\\Entity\\Coupons' => $baseDir . '/src/Entity/Coupons.php',
     'App\\Entity\\Products' => $baseDir . '/src/Entity/Products.php',
     'App\\Entity\\Taxes' => $baseDir . '/src/Entity/Taxes.php',
     'App\\Entity\\TypeCoupons' => $baseDir . '/src/Entity/TypeCoupons.php',
-    'App\\Form\\CalculatePriceType' => $baseDir . '/src/Form/CalculatePriceType.php',
-    'App\\Form\\PurchaseType' => $baseDir . '/src/Form/PurchaseType.php',
+    'App\\Form\\Application\\CalculatePriceType' => $baseDir . '/src/Form/Application/CalculatePriceType.php',
     'App\\Kernel' => $baseDir . '/src/Kernel.php',
     'App\\Repository\\CouponsRepository' => $baseDir . '/src/Repository/CouponsRepository.php',
     'App\\Repository\\ProductsRepository' => $baseDir . '/src/Repository/ProductsRepository.php',
