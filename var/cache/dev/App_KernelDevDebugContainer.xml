@@ -17,6 +17,8 @@
       <parameter key="MakerBundle">Symfony\Bundle\MakerBundle\MakerBundle</parameter>
       <parameter key="DoctrineBundle">Doctrine\Bundle\DoctrineBundle\DoctrineBundle</parameter>
       <parameter key="DoctrineMigrationsBundle">Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle</parameter>
+      <parameter key="JMSSerializerBundle">JMS\SerializerBundle\JMSSerializerBundle</parameter>
+      <parameter key="FOSRestBundle">FOS\RestBundle\FOSRestBundle</parameter>
     </parameter>
     <parameter key="kernel.bundles_metadata" type="collection">
       <parameter key="FrameworkBundle" type="collection">
@@ -50,6 +52,14 @@
       <parameter key="DoctrineMigrationsBundle" type="collection">
         <parameter key="path">/var/www/vendor/doctrine/doctrine-migrations-bundle</parameter>
         <parameter key="namespace">Doctrine\Bundle\MigrationsBundle</parameter>
+      </parameter>
+      <parameter key="JMSSerializerBundle" type="collection">
+        <parameter key="path">/var/www/vendor/jms/serializer-bundle</parameter>
+        <parameter key="namespace">JMS\SerializerBundle</parameter>
+      </parameter>
+      <parameter key="FOSRestBundle" type="collection">
+        <parameter key="path">/var/www/vendor/friendsofsymfony/rest-bundle</parameter>
+        <parameter key="namespace">FOS\RestBundle</parameter>
       </parameter>
     </parameter>
     <parameter key="kernel.charset">UTF-8</parameter>
@@ -183,6 +193,7 @@
     <parameter key="doctrine.orm.proxy_namespace">Proxies</parameter>
     <parameter key="doctrine.migrations.preferred_em">null</parameter>
     <parameter key="doctrine.migrations.preferred_connection">null</parameter>
+    <parameter key="jms_serializer.twig_enabled">default</parameter>
     <parameter key="data_collector.templates" type="collection">
       <parameter key="data_collector.request" type="collection">
         <parameter>request</parameter>
@@ -235,6 +246,10 @@
       <parameter key="data_collector.doctrine" type="collection">
         <parameter>db</parameter>
         <parameter>@Doctrine/Collector/db.html.twig</parameter>
+      </parameter>
+      <parameter key="jms_serializer.data_collector" type="collection">
+        <parameter>jms_serializer</parameter>
+        <parameter>@JMSSerializer/Collector/panel.html.twig</parameter>
       </parameter>
       <parameter key="data_collector.config" type="collection">
         <parameter>config</parameter>
@@ -422,6 +437,7 @@
         <argument key="doctrine" type="service" id="doctrine" on-invalid="ignore_uninitialized"/>
         <argument key="doctrine.debug_data_holder" type="service" id="doctrine.debug_data_holder" on-invalid="ignore_uninitialized"/>
         <argument key="form.type.entity" type="service" id="form.type.entity" on-invalid="ignore_uninitialized"/>
+        <argument key="fos_rest.view_handler.default" type="service" id="fos_rest.view_handler.default" on-invalid="ignore_uninitialized"/>
       </argument>
       <argument type="collection">
         <argument key="cache.app" type="collection">
@@ -473,6 +489,9 @@
           <argument>reset</argument>
         </argument>
         <argument key="form.type.entity" type="collection">
+          <argument>reset</argument>
+        </argument>
+        <argument key="fos_rest.view_handler.default" type="collection">
           <argument>reset</argument>
         </argument>
       </argument>
@@ -2062,6 +2081,9 @@
         <argument type="service" id="data_collector.doctrine"/>
       </call>
       <call method="add">
+        <argument type="service" id="jms_serializer.data_collector"/>
+      </call>
+      <call method="add">
         <argument type="service" id="data_collector.config"/>
       </call>
     </service>
@@ -2308,6 +2330,9 @@
       <call method="addExtension">
         <argument type="service" id="doctrine.twig.doctrine_extension"/>
       </call>
+      <call method="addExtension">
+        <argument type="service" id="jms_serializer.twig_extension.runtime_serializer"/>
+      </call>
       <call method="addGlobal">
         <argument>app</argument>
         <argument type="service" id="twig.app_variable"/>
@@ -2388,6 +2413,14 @@
         <argument>!DoctrineMigrations</argument>
       </call>
       <call method="addPath">
+        <argument>/var/www/vendor/jms/serializer-bundle/Resources/views</argument>
+        <argument>JMSSerializer</argument>
+      </call>
+      <call method="addPath">
+        <argument>/var/www/vendor/jms/serializer-bundle/Resources/views</argument>
+        <argument>!JMSSerializer</argument>
+      </call>
+      <call method="addPath">
         <argument>/var/www/templates</argument>
       </call>
       <call method="addPath">
@@ -2459,7 +2492,7 @@
       <argument>,</argument>
     </service>
     <service id="twig.runtime_loader" class="Twig\RuntimeLoader\ContainerRuntimeLoader">
-      <argument type="service" id=".service_locator.H84_pZM"/>
+      <argument type="service" id=".service_locator.5yJ6Lgt"/>
     </service>
     <service id="twig.error_renderer.html" class="Symfony\Bridge\Twig\ErrorRenderer\TwigErrorRenderer">
       <argument type="service" id="twig"/>
@@ -3358,6 +3391,954 @@
       </call>
     </service>
     <service id="doctrine.migrations.storage.table_storage" class="Doctrine\Migrations\Metadata\Storage\TableMetadataStorageConfiguration"/>
+    <service id="jms_serializer.event_dispatcher" class="JMS\SerializerBundle\Debug\TraceableEventDispatcher">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.event_dispatcher.service_locator"/>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.stopwatch_subscriber</argument>
+          <argument>onPreSerialize</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>null</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.traceable_runs_listener</argument>
+          <argument>saveRunInfo</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>null</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.doctrine_proxy_subscriber</argument>
+          <argument>onPreSerializeTypedProxy</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>Doctrine\Persistence\Proxy</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.doctrine_proxy_subscriber</argument>
+          <argument>onPreSerializeTypedProxy</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>Doctrine\Common\Persistence\Proxy</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.doctrine_proxy_subscriber</argument>
+          <argument>onPreSerialize</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>Doctrine\ORM\PersistentCollection</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.doctrine_proxy_subscriber</argument>
+          <argument>onPreSerialize</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>Doctrine\ODM\MongoDB\PersistentCollection</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.doctrine_proxy_subscriber</argument>
+          <argument>onPreSerialize</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>Doctrine\ODM\PHPCR\PersistentCollection</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.doctrine_proxy_subscriber</argument>
+          <argument>onPreSerialize</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>Doctrine\Persistence\Proxy</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.doctrine_proxy_subscriber</argument>
+          <argument>onPreSerialize</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>Doctrine\Common\Persistence\Proxy</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.doctrine_proxy_subscriber</argument>
+          <argument>onPreSerialize</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>ProxyManager\Proxy\LazyLoadingInterface</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.pre_deserialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.traceable_runs_listener</argument>
+          <argument>saveRunInfo</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>null</argument>
+      </call>
+      <call method="addListener">
+        <argument>serializer.post_serialize</argument>
+        <argument type="collection">
+          <argument>jms_serializer.stopwatch_subscriber</argument>
+          <argument>onPostSerialize</argument>
+        </argument>
+        <argument>null</argument>
+        <argument>null</argument>
+        <argument>null</argument>
+      </call>
+    </service>
+    <service id="jms_serializer.event_dispatcher.service_locator" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="collection">
+        <argument key="jms_serializer.stopwatch_subscriber" type="service_closure" id="jms_serializer.stopwatch_subscriber"/>
+        <argument key="jms_serializer.traceable_runs_listener" type="service_closure" id="jms_serializer.traceable_runs_listener"/>
+        <argument key="jms_serializer.doctrine_proxy_subscriber" type="service_closure" id="jms_serializer.doctrine_proxy_subscriber"/>
+      </argument>
+    </service>
+    <service id="jms_serializer.doctrine_proxy_subscriber" class="JMS\Serializer\EventDispatcher\Subscriber\DoctrineProxySubscriber">
+      <tag name="jms_serializer.event_subscriber"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>true</argument>
+      <argument>false</argument>
+    </service>
+    <service id="jms_serializer.stopwatch_subscriber" class="JMS\SerializerBundle\Serializer\StopwatchEventSubscriber">
+      <tag name="jms_serializer.event_subscriber"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="debug.stopwatch"/>
+      <argument>jms_serializer.default</argument>
+    </service>
+    <service id="jms_serializer.handler_registry.service_locator" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="collection">
+        <argument key="jms_serializer.array_collection_handler" type="service_closure" id="jms_serializer.array_collection_handler"/>
+        <argument key="jms_serializer.constraint_violation_handler" type="service_closure" id="jms_serializer.constraint_violation_handler"/>
+        <argument key="jms_serializer.datetime_handler" type="service_closure" id="jms_serializer.datetime_handler"/>
+        <argument key="jms_serializer.iterator_handler" type="service_closure" id="jms_serializer.iterator_handler"/>
+        <argument key="fos_rest.serializer.form_error_handler" type="service_closure" id="fos_rest.serializer.form_error_handler"/>
+      </argument>
+    </service>
+    <service id="jms_serializer.array_collection_handler" class="JMS\Serializer\Handler\ArrayCollectionHandler">
+      <tag name="jms_serializer.subscribing_handler"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>false</argument>
+    </service>
+    <service id="jms_serializer.constraint_violation_handler" class="JMS\Serializer\Handler\ConstraintViolationHandler">
+      <tag name="jms_serializer.subscribing_handler"/>
+      <tag name="default">jms_serializer.instance</tag>
+    </service>
+    <service id="jms_serializer.datetime_handler" class="JMS\Serializer\Handler\DateHandler">
+      <tag name="jms_serializer.subscribing_handler"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>Y-m-d\TH:i:sP</argument>
+      <argument>UTC</argument>
+      <argument>true</argument>
+    </service>
+    <service id="jms_serializer.iterator_handler" class="JMS\Serializer\Handler\IteratorHandler">
+      <tag name="jms_serializer.subscribing_handler"/>
+      <tag name="default">jms_serializer.instance</tag>
+    </service>
+    <service id="jms_serializer.type_parser" class="JMS\Serializer\Type\Parser">
+      <tag name="jms_serializer.instance_global"/>
+    </service>
+    <service id="jms_serializer.metadata.yaml_driver" class="JMS\Serializer\Metadata\Driver\YamlDriver">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.metadata.traceable_file_locator"/>
+      <argument type="service" id="jms_serializer.serialized_name_annotation_strategy"/>
+      <argument type="service" id="jms_serializer.type_parser" on-invalid="null"/>
+      <argument>null</argument>
+    </service>
+    <service id="jms_serializer.metadata.xml_driver" class="JMS\Serializer\Metadata\Driver\XmlDriver">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.metadata.traceable_file_locator"/>
+      <argument type="service" id="jms_serializer.serialized_name_annotation_strategy"/>
+      <argument type="service" id="jms_serializer.type_parser" on-invalid="null"/>
+      <argument>null</argument>
+    </service>
+    <service id="jms_serializer.metadata.annotation_or_attribute_driver" class="JMS\Serializer\Metadata\Driver\AnnotationOrAttributeDriver">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.serialized_name_annotation_strategy"/>
+      <argument type="service" id="jms_serializer.type_parser" on-invalid="null"/>
+      <argument>null</argument>
+      <argument type="service" id="annotations.cached_reader" on-invalid="null"/>
+    </service>
+    <service id="jms_serializer.metadata.null_driver" class="JMS\Serializer\Metadata\Driver\NullDriver">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.serialized_name_annotation_strategy"/>
+    </service>
+    <service id="jms_serializer.metadata.doctrine_type_driver" class="JMS\Serializer\Metadata\Driver\DoctrineTypeDriver">
+      <argument type="service" id="jms_serializer.metadata.doctrine_type_driver.inner"/>
+      <argument type="service" id="doctrine"/>
+      <argument type="service" id="jms_serializer.type_parser"/>
+    </service>
+    <service id="jms_serializer.metadata.typed_properties_driver" class="JMS\Serializer\Metadata\Driver\TypedPropertiesDriver">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.metadata.doctrine_type_driver"/>
+      <argument type="service" id="jms_serializer.type_parser" on-invalid="null"/>
+    </service>
+    <service id="jms_serializer.metadata.service_locator" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="collection">
+        <argument key="metadata_driver" type="service_closure" id="jms_serializer.metadata.typed_properties_driver"/>
+      </argument>
+    </service>
+    <service id="jms_serializer.metadata.lazy_loading_driver" class="Metadata\Driver\LazyLoadingDriver">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.metadata.service_locator"/>
+      <argument>metadata_driver</argument>
+    </service>
+    <service id="jms_serializer.metadata.cache.file_cache" class="Metadata\Cache\FileCache">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>/var/www/var/cache/dev/jms_serializer_default</argument>
+    </service>
+    <service id="jms_serializer.version_exclusion_strategy" class="JMS\Serializer\Exclusion\VersionExclusionStrategy" abstract="true">
+      <tag name="default">jms_serializer.instance</tag>
+    </service>
+    <service id="jms_serializer.camel_case_naming_strategy" class="JMS\Serializer\Naming\CamelCaseNamingStrategy">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>_</argument>
+      <argument>true</argument>
+    </service>
+    <service id="jms_serializer.identical_property_naming_strategy" class="JMS\Serializer\Naming\IdenticalPropertyNamingStrategy">
+      <tag name="default">jms_serializer.instance</tag>
+    </service>
+    <service id="jms_serializer.serialized_name_annotation_strategy" class="JMS\Serializer\Naming\SerializedNameAnnotationStrategy">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.camel_case_naming_strategy"/>
+    </service>
+    <service id="jms_serializer.doctrine_object_constructor" class="JMS\Serializer\Construction\DoctrineObjectConstructor">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="doctrine" on-invalid="ignore"/>
+      <argument type="service" id="jms_serializer.doctrine_object_constructor.inner"/>
+      <argument type="string">null</argument>
+    </service>
+    <service id="jms_serializer.doctrine_phpcr_object_constructor" class="JMS\Serializer\Construction\DoctrineObjectConstructor">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>null</argument>
+      <argument type="service" id="jms_serializer.doctrine_object_constructor"/>
+    </service>
+    <service id="jms_serializer.serializer" class="JMS\Serializer\Serializer">
+      <tag name="default">jms_serializer.instance</tag>
+      <tag name="default">jms_serializer.serializer</tag>
+      <argument type="service" id="jms_serializer.traceable_metadata_factory"/>
+      <argument type="collection">
+        <argument key="2" type="service" id="jms_serializer.deserialization_graph_navigator_factory"/>
+        <argument key="1" type="service" id="jms_serializer.serialization_graph_navigator_factory"/>
+      </argument>
+      <argument type="collection">
+        <argument key="json" type="service" id="jms_serializer.json_serialization_visitor"/>
+        <argument key="xml" type="service" id="jms_serializer.xml_serialization_visitor"/>
+      </argument>
+      <argument type="collection">
+        <argument key="json" type="service" id="jms_serializer.json_deserialization_visitor"/>
+        <argument key="xml" type="service" id="jms_serializer.xml_deserialization_visitor"/>
+      </argument>
+      <argument type="service" id="jms_serializer.configured_serialization_context_factory"/>
+      <argument type="service" id="jms_serializer.configured_deserialization_context_factory"/>
+      <argument type="service" id="jms_serializer.type_parser" on-invalid="null"/>
+    </service>
+    <service id="jms_serializer.deserialization_graph_navigator_factory" class="JMS\Serializer\GraphNavigator\Factory\DeserializationGraphNavigatorFactory">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.traceable_metadata_factory"/>
+      <argument type="service" id="jms_serializer.traceable_handler_registry"/>
+      <argument type="service" id="jms_serializer.doctrine_object_constructor"/>
+      <argument type="service" id="jms_serializer.accessor_strategy.default"/>
+      <argument type="service" id="jms_serializer.event_dispatcher"/>
+      <argument>null</argument>
+    </service>
+    <service id="jms_serializer.serialization_graph_navigator_factory" class="JMS\Serializer\GraphNavigator\Factory\SerializationGraphNavigatorFactory">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.traceable_metadata_factory"/>
+      <argument type="service" id="jms_serializer.traceable_handler_registry"/>
+      <argument type="service" id="jms_serializer.accessor_strategy.default"/>
+      <argument type="service" id="jms_serializer.event_dispatcher"/>
+      <argument>null</argument>
+    </service>
+    <service id="jms_serializer.expression_language" class="Symfony\Component\ExpressionLanguage\ExpressionLanguage">
+      <tag name="jms_serializer.instance_global"/>
+      <call method="registerProvider">
+        <argument type="service" id="jms_serializer.expression_language.function_provider"/>
+      </call>
+    </service>
+    <service id="jms_serializer.expression_language.function_provider" class="JMS\SerializerBundle\ExpressionLanguage\BasicSerializerFunctionsProvider">
+      <tag name="jms.expression.function_provider"/>
+      <tag name="default">jms_serializer.instance</tag>
+    </service>
+    <service id="jms_serializer.twig_extension.runtime_serializer" class="JMS\Serializer\Twig\SerializerRuntimeExtension">
+      <tag name="twig.extension"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>jms_</argument>
+    </service>
+    <service id="jms_serializer.twig_extension.serializer_runtime_helper" class="JMS\Serializer\Twig\SerializerRuntimeHelper">
+      <tag name="twig.runtime"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.serializer"/>
+    </service>
+    <service id="jms_serializer.accessor_strategy.default" class="JMS\Serializer\Accessor\DefaultAccessorStrategy">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>null</argument>
+    </service>
+    <service id="jms_serializer.json_serialization_visitor" class="JMS\Serializer\Visitor\Factory\JsonSerializationVisitorFactory">
+      <tag name="jms_serializer.serialization_visitor" format="json"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <call method="setOptions">
+        <argument>1216</argument>
+      </call>
+    </service>
+    <service id="jms_serializer.json_deserialization_visitor" class="JMS\Serializer\Visitor\Factory\JsonDeserializationVisitorFactory">
+      <tag name="jms_serializer.deserialization_visitor" format="json"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>false</argument>
+      <call method="setOptions">
+        <argument>0</argument>
+      </call>
+    </service>
+    <service id="jms_serializer.xml_serialization_visitor" class="JMS\Serializer\Visitor\Factory\XmlSerializationVisitorFactory">
+      <tag name="jms_serializer.serialization_visitor" format="xml"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <call method="setFormatOutput">
+        <argument>true</argument>
+      </call>
+    </service>
+    <service id="jms_serializer.xml_deserialization_visitor" class="JMS\Serializer\Visitor\Factory\XmlDeserializationVisitorFactory">
+      <tag name="jms_serializer.deserialization_visitor" format="xml"/>
+      <tag name="default">jms_serializer.instance</tag>
+    </service>
+    <service id="jms_serializer.cache.cache_clearer" class="JMS\SerializerBundle\Cache\CacheClearer">
+      <tag name="kernel.cache_clearer"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.metadata.cache.file_cache"/>
+    </service>
+    <service id="jms_serializer.configured_serialization_context_factory" class="JMS\SerializerBundle\ContextFactory\ConfiguredContextFactory">
+      <tag name="default">jms_serializer.instance</tag>
+    </service>
+    <service id="jms_serializer.configured_deserialization_context_factory" class="JMS\SerializerBundle\ContextFactory\ConfiguredContextFactory">
+      <tag name="default">jms_serializer.instance</tag>
+    </service>
+    <service id="jms_serializer.data_collector" class="JMS\SerializerBundle\Debug\DataCollector">
+      <tag name="jms_serializer.profiler"/>
+      <tag name="data_collector" id="jms_serializer" template="@JMSSerializer/Collector/panel.html.twig"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument>default</argument>
+      <argument type="collection"/>
+      <argument type="service" id="jms_serializer.event_dispatcher"/>
+      <argument type="service" id="jms_serializer.traceable_handler_registry"/>
+      <argument type="service" id="jms_serializer.traceable_metadata_factory"/>
+      <argument type="service" id="jms_serializer.metadata.traceable_file_locator"/>
+      <argument type="service" id="jms_serializer.traceable_runs_listener"/>
+    </service>
+    <service id="jms_serializer.traceable_runs_listener" class="JMS\SerializerBundle\Debug\RunsListener">
+      <tag name="jms_serializer.event_listener" event="serializer.pre_serialize" method="saveRunInfo"/>
+      <tag name="jms_serializer.event_listener" event="serializer.pre_deserialize" method="saveRunInfo"/>
+      <tag name="jms_serializer.profiler"/>
+      <tag name="default">jms_serializer.instance</tag>
+    </service>
+    <service id="jms_serializer.traceable_metadata_factory" class="JMS\SerializerBundle\Debug\TraceableMetadataFactory">
+      <tag name="default">jms_serializer.instance</tag>
+      <tag name="jms_serializer.profiler"/>
+      <argument type="service" id="jms_serializer.traceable_metadata_factory.inner"/>
+    </service>
+    <service id="jms_serializer.traceable_handler_registry" class="JMS\SerializerBundle\Debug\TraceableHandlerRegistry">
+      <tag name="default">jms_serializer.instance</tag>
+      <tag name="jms_serializer.profiler"/>
+      <argument type="service" id="jms_serializer.traceable_handler_registry.inner"/>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>ArrayCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>ArrayCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Doctrine\Common\Collections\ArrayCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Doctrine\Common\Collections\ArrayCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Doctrine\ORM\PersistentCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Doctrine\ORM\PersistentCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Doctrine\ODM\MongoDB\PersistentCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Doctrine\ODM\MongoDB\PersistentCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Doctrine\ODM\PHPCR\PersistentCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Doctrine\ODM\PHPCR\PersistentCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>serializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Validator\ConstraintViolationList</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.constraint_violation_handler</argument>
+          <argument>serializeListToxml</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Validator\ConstraintViolationList</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.constraint_violation_handler</argument>
+          <argument>serializeListTojson</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Validator\ConstraintViolation</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.constraint_violation_handler</argument>
+          <argument>serializeViolationToxml</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Validator\ConstraintViolation</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.constraint_violation_handler</argument>
+          <argument>serializeViolationTojson</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>DateTime</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>serializeDateTime</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>DateTime</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>serializeDateTime</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>DateTimeImmutable</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>serializeDateTimeImmutable</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>DateTimeImmutable</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>serializeDateTimeImmutable</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>DateInterval</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>serializeDateInterval</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>DateInterval</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>serializeDateInterval</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>DateTimeInterface</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>serializeDateTimeInterface</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>DateTimeInterface</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>serializeDateTimeInterface</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Iterator</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>serializeIterable</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Iterator</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>serializeIterable</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>ArrayIterator</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>serializeIterable</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>ArrayIterator</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>serializeIterable</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Generator</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>serializeIterable</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Generator</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>serializeIterable</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Form\Form</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>fos_rest.serializer.form_error_handler</argument>
+          <argument>serializeFormToxml</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Form\Form</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>fos_rest.serializer.form_error_handler</argument>
+          <argument>serializeFormTojson</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Form\FormInterface</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>fos_rest.serializer.form_error_handler</argument>
+          <argument>serializeFormToXml</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Form\FormInterface</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>fos_rest.serializer.form_error_handler</argument>
+          <argument>serializeFormToJson</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Form\FormError</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>fos_rest.serializer.form_error_handler</argument>
+          <argument>serializeFormErrorToxml</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>1</argument>
+        <argument>Symfony\Component\Form\FormError</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>fos_rest.serializer.form_error_handler</argument>
+          <argument>serializeFormErrorTojson</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>ArrayCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>ArrayCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Doctrine\Common\Collections\ArrayCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Doctrine\Common\Collections\ArrayCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Doctrine\ORM\PersistentCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Doctrine\ORM\PersistentCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Doctrine\ODM\MongoDB\PersistentCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Doctrine\ODM\MongoDB\PersistentCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Doctrine\ODM\PHPCR\PersistentCollection</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Doctrine\ODM\PHPCR\PersistentCollection</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.array_collection_handler</argument>
+          <argument>deserializeCollection</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>DateTime</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>deserializeDateTimeFromjson</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>DateTime</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>deserializeDateTimeFromxml</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>DateTimeImmutable</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>deserializeDateTimeImmutableFromjson</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>DateTimeImmutable</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>deserializeDateTimeImmutableFromxml</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>DateInterval</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>deserializeDateIntervalFromjson</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>DateInterval</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>deserializeDateIntervalFromxml</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>DateTimeInterface</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>deserializeDateTimeFromJson</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>DateTimeInterface</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.datetime_handler</argument>
+          <argument>deserializeDateTimeFromXml</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Iterator</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>deserializeIterator</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Iterator</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>deserializeIterator</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>ArrayIterator</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>deserializeIterator</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>ArrayIterator</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>deserializeIterator</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Generator</argument>
+        <argument>json</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>deserializeGenerator</argument>
+        </argument>
+      </call>
+      <call method="registerHandler">
+        <argument>2</argument>
+        <argument>Generator</argument>
+        <argument>xml</argument>
+        <argument type="collection">
+          <argument>jms_serializer.iterator_handler</argument>
+          <argument>deserializeGenerator</argument>
+        </argument>
+      </call>
+    </service>
+    <service id="jms_serializer.metadata.traceable_file_locator" class="JMS\SerializerBundle\Debug\TraceableFileLocator">
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="jms_serializer.metadata.traceable_file_locator.inner"/>
+    </service>
+    <service id="fos_rest.view_handler.default" class="FOS\RestBundle\View\ViewHandler">
+      <tag name="kernel.reset" method="reset"/>
+      <argument type="service" id="router.default"/>
+      <argument type="service" id="fos_rest.serializer.jms"/>
+      <argument type="service" id="request_stack"/>
+      <argument type="collection">
+        <argument key="json">false</argument>
+        <argument key="xml">false</argument>
+      </argument>
+      <argument>400</argument>
+      <argument>204</argument>
+      <argument>false</argument>
+      <argument type="collection">
+        <argument key="serializeNullStrategy">false</argument>
+      </argument>
+      <factory class="FOS\RestBundle\View\ViewHandler" method="create"/>
+    </service>
+    <service id="fos_rest.view_handler.jsonp" class="FOS\RestBundle\View\JsonpHandler">
+      <argument></argument>
+    </service>
+    <service id="fos_rest.request.param_fetcher" class="FOS\RestBundle\Request\ParamFetcher">
+      <argument type="service" id="service_container"/>
+      <argument type="service" id="fos_rest.request.param_fetcher.reader"/>
+      <argument type="service" id="request_stack"/>
+      <argument type="service" id="debug.validator" on-invalid="null"/>
+    </service>
+    <service id="fos_rest.request.param_fetcher.reader" class="FOS\RestBundle\Request\ParamReader">
+      <argument type="service" id="annotations.cached_reader" on-invalid="null"/>
+    </service>
+    <service id="fos_rest.serializer.jms" class="FOS\RestBundle\Serializer\JMSSerializerAdapter">
+      <argument type="service" id="jms_serializer.serializer"/>
+      <argument type="service" id="jms_serializer.configured_serialization_context_factory"/>
+      <argument type="service" id="jms_serializer.configured_deserialization_context_factory"/>
+    </service>
+    <service id="fos_rest.serializer.symfony" class="FOS\RestBundle\Serializer\SymfonySerializerAdapter">
+      <argument type="service" id="serializer"/>
+    </service>
+    <service id="fos_rest.serializer.form_error_normalizer" class="FOS\RestBundle\Serializer\Normalizer\FormErrorNormalizer">
+      <tag name="serializer.normalizer" priority="-10"/>
+    </service>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Api\EndpointCalculatePriceController" class="App\Controller\Api\EndpointCalculatePriceController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Api\EndpointCalculatePriceController" class="App\Controller\Api\EndpointCalculatePriceController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Api\EndpointCalculatePriceController" class="App\Controller\Api\EndpointCalculatePriceController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -3881,6 +4862,11 @@
         <argument>default</argument>
       </call>
     </service>
+    <service id="fos_rest.serializer.form_error_handler" class="FOS\RestBundle\Serializer\Normalizer\FormErrorHandler">
+      <tag name="jms_serializer.subscribing_handler"/>
+      <tag name="default">jms_serializer.instance</tag>
+      <argument type="service" id="fos_rest.serializer.form_error_handler.inner"/>
+    </service>
     <service id="logger" class="Symfony\Component\HttpKernel\Log\Logger"/>
     <service id=".service_locator.mx0UMmY" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
@@ -4018,6 +5004,15 @@
     <service id="doctrine.migrations.container_aware_migrations_factory.inner" class="Doctrine\Migrations\Version\MigrationFactory">
       <factory service="doctrine.migrations.dependency_factory" method="getMigrationFactory"/>
     </service>
+    <service id="jms_serializer.metadata.doctrine_type_driver.inner" class="Metadata\Driver\DriverChain">
+      <argument type="collection">
+        <argument type="service" id="jms_serializer.metadata.yaml_driver"/>
+        <argument type="service" id="jms_serializer.metadata.xml_driver"/>
+        <argument type="service" id="jms_serializer.metadata.annotation_or_attribute_driver"/>
+        <argument type="service" id="jms_serializer.metadata.null_driver"/>
+      </argument>
+    </service>
+    <service id="jms_serializer.doctrine_object_constructor.inner" class="JMS\Serializer\Construction\UnserializeObjectConstructor"/>
     <service id="debug.argument_resolver.request_attribute.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestAttributeValueResolver"/>
     <service id="debug.argument_resolver.request.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestValueResolver"/>
     <service id="debug.argument_resolver.session.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\SessionValueResolver"/>
@@ -4034,6 +5029,27 @@
         <argument type="service" id="doctrine.orm.default_attribute_metadata_driver"/>
         <argument>App\Entity</argument>
       </call>
+    </service>
+    <service id="fos_rest.serializer.form_error_handler.inner" class="JMS\Serializer\Handler\FormErrorHandler">
+      <argument>null</argument>
+      <argument>validators</argument>
+    </service>
+    <service id="jms_serializer.traceable_metadata_factory.inner" class="Metadata\MetadataFactory">
+      <argument type="service" id="jms_serializer.metadata.lazy_loading_driver"/>
+      <argument>Metadata\ClassHierarchyMetadata</argument>
+      <argument>true</argument>
+      <call method="setCache">
+        <argument type="service" id="jms_serializer.metadata.cache.file_cache" on-invalid="ignore"/>
+      </call>
+      <call method="setIncludeInterfaces">
+        <argument>false</argument>
+      </call>
+    </service>
+    <service id="jms_serializer.traceable_handler_registry.inner" class="JMS\Serializer\Handler\LazyHandlerRegistry">
+      <argument type="service" id="jms_serializer.handler_registry.service_locator"/>
+    </service>
+    <service id="jms_serializer.metadata.traceable_file_locator.inner" class="Metadata\Driver\FileLocator">
+      <argument type="collection"/>
     </service>
     <service id=".errored..service_locator.xUrKPVU.Symfony\Component\Config\Loader\LoaderInterface" class="Symfony\Component\Config\Loader\LoaderInterface"/>
     <service id=".console.command.about.lazy" class="Symfony\Component\Console\Command\LazyCommand">
@@ -4643,11 +5659,12 @@
     </service>
     <service id="cache.doctrine.orm.default.result.recorder_inner" class="Symfony\Component\Cache\Adapter\ArrayAdapter"/>
     <service id="cache.doctrine.orm.default.query.recorder_inner" class="Symfony\Component\Cache\Adapter\ArrayAdapter"/>
-    <service id=".service_locator.H84_pZM" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.5yJ6Lgt" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="Symfony\Bridge\Twig\Extension\HttpKernelRuntime" type="service_closure" id="twig.runtime.httpkernel"/>
         <argument key="Symfony\Component\Form\FormRenderer" type="service_closure" id="twig.form.renderer"/>
+        <argument key="JMS\Serializer\Twig\SerializerRuntimeHelper" type="service_closure" id="jms_serializer.twig_extension.serializer_runtime_helper"/>
       </argument>
     </service>
     <service id="Psr\Container\ContainerInterface" alias="service_container">
@@ -4738,6 +5755,82 @@
     <service id="Doctrine\ORM\EntityManagerInterface $defaultEntityManager" alias="doctrine.orm.default_entity_manager"/>
     <service id="doctrine.orm.default_entity_manager.event_manager" alias="doctrine.dbal.default_connection.event_manager"/>
     <service id="doctrine.migrations.metadata_storage" alias="doctrine.migrations.storage.table_storage"/>
+    <service id="jms_serializer.metadata.cache" alias="jms_serializer.metadata.cache.file_cache"/>
+    <service id="jms_serializer.naming_strategy" alias="jms_serializer.serialized_name_annotation_strategy"/>
+    <service id="jms_serializer.deserialization_context_factory" alias="jms_serializer.configured_deserialization_context_factory" public="true"/>
+    <service id="jms_serializer.serialization_context_factory" alias="jms_serializer.configured_serialization_context_factory" public="true"/>
+    <service id="jms_serializer" alias="jms_serializer.serializer" public="true"/>
+    <service id="JMS\Serializer\SerializerInterface" alias="jms_serializer.serializer"/>
+    <service id="JMS\Serializer\ArrayTransformerInterface" alias="jms_serializer.serializer"/>
+    <service id="jms_serializer.accessor_strategy" alias="jms_serializer.accessor_strategy.default"/>
+    <service id="JMS\Serializer\ContextFactory\SerializationContextFactoryInterface" alias="jms_serializer.configured_serialization_context_factory"/>
+    <service id="JMS\Serializer\ContextFactory\DeserializationContextFactoryInterface" alias="jms_serializer.configured_deserialization_context_factory"/>
+    <service id="jms_serializer.instance.default.event_dispatcher" alias="jms_serializer.event_dispatcher"/>
+    <service id="jms_serializer.instance.default.event_dispatcher.service_locator" alias="jms_serializer.event_dispatcher.service_locator"/>
+    <service id="jms_serializer.instance.default.doctrine_proxy_subscriber" alias="jms_serializer.doctrine_proxy_subscriber"/>
+    <service id="jms_serializer.instance.default.stopwatch_subscriber" alias="jms_serializer.stopwatch_subscriber"/>
+    <service id="jms_serializer.instance.default.enum_subscriber" alias="jms_serializer.enum_subscriber"/>
+    <service id="jms_serializer.instance.default.handler_registry" alias="jms_serializer.traceable_handler_registry"/>
+    <service id="jms_serializer.instance.default.handler_registry.service_locator" alias="jms_serializer.handler_registry.service_locator"/>
+    <service id="jms_serializer.instance.default.enum_handler" alias="jms_serializer.enum_handler"/>
+    <service id="jms_serializer.instance.default.array_collection_handler" alias="jms_serializer.array_collection_handler"/>
+    <service id="jms_serializer.instance.default.constraint_violation_handler" alias="jms_serializer.constraint_violation_handler"/>
+    <service id="jms_serializer.instance.default.datetime_handler" alias="jms_serializer.datetime_handler"/>
+    <service id="jms_serializer.instance.default.form_error_handler" alias="fos_rest.serializer.form_error_handler"/>
+    <service id="jms_serializer.instance.default.iterator_handler" alias="jms_serializer.iterator_handler"/>
+    <service id="jms_serializer.instance.default.symfony_uid_handler" alias="jms_serializer.symfony_uid_handler"/>
+    <service id="jms_serializer.instance.default.type_parser" alias="jms_serializer.type_parser"/>
+    <service id="jms_serializer.instance.default.metadata.file_locator" alias="jms_serializer.metadata.traceable_file_locator"/>
+    <service id="jms_serializer.instance.default.metadata.yaml_driver" alias="jms_serializer.metadata.yaml_driver"/>
+    <service id="jms_serializer.instance.default.metadata.xml_driver" alias="jms_serializer.metadata.xml_driver"/>
+    <service id="jms_serializer.instance.default.metadata.annotation_or_attribute_driver" alias="jms_serializer.metadata.annotation_or_attribute_driver"/>
+    <service id="jms_serializer.instance.default.metadata.null_driver" alias="jms_serializer.metadata.null_driver"/>
+    <service id="jms_serializer.instance.default.metadata_driver" alias="jms_serializer.metadata.typed_properties_driver"/>
+    <service id="jms_serializer.instance.default.metadata.doctrine_type_driver" alias="jms_serializer.metadata.doctrine_type_driver"/>
+    <service id="jms_serializer.instance.default.metadata.doctrine_phpcr_type_driver" alias="jms_serializer.metadata.doctrine_phpcr_type_driver"/>
+    <service id="jms_serializer.instance.default.metadata.default_value_property_driver" alias="jms_serializer.metadata.default_value_property_driver"/>
+    <service id="jms_serializer.instance.default.metadata.typed_properties_driver" alias="jms_serializer.metadata.typed_properties_driver"/>
+    <service id="jms_serializer.instance.default.metadata.enum_driver" alias="jms_serializer.metadata.enum_driver"/>
+    <service id="jms_serializer.instance.default.metadata.doc_block_driver" alias="jms_serializer.metadata.doc_block_driver"/>
+    <service id="jms_serializer.instance.default.metadata.service_locator" alias="jms_serializer.metadata.service_locator"/>
+    <service id="jms_serializer.instance.default.metadata.lazy_loading_driver" alias="jms_serializer.metadata.lazy_loading_driver"/>
+    <service id="jms_serializer.instance.default.metadata.cache.file_cache" alias="jms_serializer.metadata.cache.file_cache"/>
+    <service id="jms_serializer.instance.default.metadata_factory" alias="jms_serializer.traceable_metadata_factory"/>
+    <service id="jms_serializer.instance.default.version_exclusion_strategy" alias="jms_serializer.version_exclusion_strategy"/>
+    <service id="jms_serializer.instance.default.camel_case_naming_strategy" alias="jms_serializer.camel_case_naming_strategy"/>
+    <service id="jms_serializer.instance.default.identical_property_naming_strategy" alias="jms_serializer.identical_property_naming_strategy"/>
+    <service id="jms_serializer.instance.default.serialized_name_annotation_strategy" alias="jms_serializer.serialized_name_annotation_strategy"/>
+    <service id="jms_serializer.instance.default.doctrine_object_constructor" alias="jms_serializer.doctrine_object_constructor"/>
+    <service id="jms_serializer.instance.default.doctrine_phpcr_object_constructor" alias="jms_serializer.doctrine_phpcr_object_constructor"/>
+    <service id="jms_serializer.instance.default.object_constructor" alias="jms_serializer.doctrine_object_constructor"/>
+    <service id="jms_serializer.instance.default.serializer" alias="jms_serializer.serializer"/>
+    <service id="jms_serializer.instance.default.deserialization_graph_navigator_factory" alias="jms_serializer.deserialization_graph_navigator_factory"/>
+    <service id="jms_serializer.instance.default.serialization_graph_navigator_factory" alias="jms_serializer.serialization_graph_navigator_factory"/>
+    <service id="jms_serializer.instance.default.expression_evaluator" alias="jms_serializer.expression_evaluator"/>
+    <service id="jms_serializer.instance.default.expression_language" alias="jms_serializer.expression_language"/>
+    <service id="jms_serializer.instance.default.expression_language.function_provider" alias="jms_serializer.expression_language.function_provider"/>
+    <service id="jms_serializer.instance.default.twig_extension.serializer" alias="jms_serializer.twig_extension.serializer"/>
+    <service id="jms_serializer.instance.default.twig_extension.runtime_serializer" alias="jms_serializer.twig_extension.runtime_serializer"/>
+    <service id="jms_serializer.instance.default.twig_extension.serializer_runtime_helper" alias="jms_serializer.twig_extension.serializer_runtime_helper"/>
+    <service id="jms_serializer.instance.default.templating.helper.serializer" alias="jms_serializer.templating.helper.serializer"/>
+    <service id="jms_serializer.instance.default.accessor_strategy.default" alias="jms_serializer.accessor_strategy.default"/>
+    <service id="jms_serializer.instance.default.json_serialization_visitor" alias="jms_serializer.json_serialization_visitor"/>
+    <service id="jms_serializer.instance.default.json_deserialization_visitor" alias="jms_serializer.json_deserialization_visitor"/>
+    <service id="jms_serializer.instance.default.xml_serialization_visitor" alias="jms_serializer.xml_serialization_visitor"/>
+    <service id="jms_serializer.instance.default.xml_deserialization_visitor" alias="jms_serializer.xml_deserialization_visitor"/>
+    <service id="jms_serializer.instance.default.cache.cache_clearer" alias="jms_serializer.cache.cache_clearer"/>
+    <service id="jms_serializer.instance.default.cache.cache_warmer" alias="jms_serializer.cache.cache_warmer"/>
+    <service id="jms_serializer.instance.default.configured_serialization_context_factory" alias="jms_serializer.configured_serialization_context_factory"/>
+    <service id="jms_serializer.instance.default.configured_deserialization_context_factory" alias="jms_serializer.configured_deserialization_context_factory"/>
+    <service id="jms_serializer.instance.default.data_collector" alias="jms_serializer.data_collector"/>
+    <service id="jms_serializer.instance.default.traceable_runs_listener" alias="jms_serializer.traceable_runs_listener"/>
+    <service id="jms_serializer.instance.default.traceable_metadata_factory" alias="jms_serializer.traceable_metadata_factory"/>
+    <service id="jms_serializer.instance.default.traceable_handler_registry" alias="jms_serializer.traceable_handler_registry"/>
+    <service id="jms_serializer.instance.default.metadata.traceable_file_locator" alias="jms_serializer.metadata.traceable_file_locator"/>
+    <service id="jms_serializer.instances.default" alias="jms_serializer.serializer" public="true"/>
+    <service id="FOS\RestBundle\View\ViewHandlerInterface" alias="fos_rest.view_handler.default"/>
+    <service id="FOS\RestBundle\Request\ParamFetcherInterface" alias="fos_rest.request.param_fetcher"/>
+    <service id="fos_rest.view_handler" alias="fos_rest.view_handler.default" public="true"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.gSv9zYw" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
     <service id="argument_resolver.controller_locator" alias=".service_locator.IGfuHGd"/>
@@ -4746,7 +5839,11 @@
     </service>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
+    <service id="fos_rest.serializer" alias="fos_rest.serializer.jms"/>
     <service id="Psr\Log\LoggerInterface" alias="logger"/>
+    <service id=".service_locator.dvfUIQY" alias="jms_serializer.event_dispatcher.service_locator"/>
+    <service id=".service_locator.kU_9bh." alias="jms_serializer.handler_registry.service_locator"/>
+    <service id=".service_locator.13qzyLC" alias="jms_serializer.metadata.service_locator"/>
     <service id=".service_locator.0GV1BZZ" alias=".service_locator.gSv9zYw"/>
     <service id=".service_locator.LiQUigB" alias=".service_locator.IGfuHGd"/>
     <service id=".service_locator.bkUSUfi" alias=".service_locator.AHPGEE6"/>
@@ -4759,6 +5856,9 @@
     <service id="argument_resolver" alias="debug.argument_resolver"/>
     <service id="twig.error_renderer.html.inner" alias="error_handler.error_renderer.html"/>
     <service id="doctrine.migrations.migrations_factory" alias="doctrine.migrations.container_aware_migrations_factory"/>
+    <service id="jms_serializer.metadata_driver" alias="jms_serializer.metadata.typed_properties_driver"/>
+    <service id="jms_serializer.metadata.typed_properties_driver.inner" alias="jms_serializer.metadata.doctrine_type_driver"/>
+    <service id="jms_serializer.object_constructor" alias="jms_serializer.doctrine_object_constructor"/>
     <service id="argument_resolver.request_attribute" alias="debug.argument_resolver.request_attribute"/>
     <service id="argument_resolver.request" alias="debug.argument_resolver.request"/>
     <service id="argument_resolver.session" alias="debug.argument_resolver.session"/>
@@ -4767,6 +5867,10 @@
     <service id="argument_resolver.variadic" alias="debug.argument_resolver.variadic"/>
     <service id="argument_resolver.not_tagged_controller" alias="debug.argument_resolver.not_tagged_controller"/>
     <service id="doctrine.orm.default_metadata_driver" alias=".doctrine.orm.default_metadata_driver"/>
+    <service id="jms_serializer.form_error_handler" alias="fos_rest.serializer.form_error_handler"/>
+    <service id="jms_serializer.metadata_factory" alias="jms_serializer.traceable_metadata_factory"/>
+    <service id="jms_serializer.handler_registry" alias="jms_serializer.traceable_handler_registry"/>
+    <service id="jms_serializer.metadata.file_locator" alias="jms_serializer.metadata.traceable_file_locator"/>
     <service id=".service_locator.uo5c0SP" alias=".service_locator.xUrKPVU"/>
     <service id=".service_locator.arik6u0" alias=".service_locator.6B_ZjHa"/>
     <service id=".service_locator.xwPrrlL" alias=".service_locator.mx0UMmY"/>

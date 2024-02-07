@@ -8,8 +8,9 @@
 return [
     false, // $matchHost
     [ // $staticRoutes
-        '/calculate-price' => [[['_route' => 'calculate-price', '_controller' => 'App\\Controller\\Application\\ApplicationController::CalculatePrice'], null, null, null, false, false, null]],
-        '/purchase' => [[['_route' => 'purchase', '_controller' => 'App\\Controller\\Application\\ApplicationController::Purchase'], null, null, null, false, false, null]],
+        '/calculate-price' => [[['_route' => 'calculate-price', '_controller' => 'App\\Controller\\Api\\EndpointCalculatePriceController::CalculatePriceWithACoupon'], null, ['POST' => 0], null, false, false, null]],
+        '/calculate-price1' => [[['_route' => 'calculate-price1', '_controller' => 'App\\Controller\\Application\\ApplicationController::CalculatePrice'], null, null, null, false, false, null]],
+        '/purchase1' => [[['_route' => 'purchase1', '_controller' => 'App\\Controller\\Application\\ApplicationController::Purchase'], null, null, null, false, false, null]],
         '/reset' => [[['_route' => 'reset', '_controller' => 'App\\Controller\\Application\\ApplicationController::ResetPart'], null, null, null, false, false, null]],
         '/' => [
             [['_route' => 'home_page', '_controller' => 'App\\Controller\\Application\\HomePageController::index'], null, null, null, false, false, null],
@@ -24,43 +25,39 @@ return [
     ],
     [ // $regexpList
         0 => '{^(?'
-                .'|/calculate\\-price/product/([^/]++)/taxNumber/([^/]++)(?'
-                    .'|/couponCode/([^/]++)(*:83)'
-                    .'|(*:90)'
-                .')'
+                .'|/3calculate\\-price/product/([^/]++)/taxNumber/([^/]++)(*:61)'
                 .'|/purchase/product/([^/]++)/taxNumber/([^/]++)/(?'
-                    .'|couponCode/([^/]++)/paymentProcessor/([^/]++)(*:192)'
-                    .'|paymentProcessor/([^/]++)(*:225)'
+                    .'|couponCode/([^/]++)/paymentProcessor/([^/]++)(*:162)'
+                    .'|paymentProcessor/([^/]++)(*:195)'
                 .')'
                 .'|/_(?'
-                    .'|error/(\\d+)(?:\\.([^/]++))?(*:265)'
-                    .'|wdt/([^/]++)(*:285)'
+                    .'|error/(\\d+)(?:\\.([^/]++))?(*:235)'
+                    .'|wdt/([^/]++)(*:255)'
                     .'|profiler/([^/]++)(?'
                         .'|/(?'
-                            .'|search/results(*:331)'
-                            .'|router(*:345)'
+                            .'|search/results(*:301)'
+                            .'|router(*:315)'
                             .'|exception(?'
-                                .'|(*:365)'
-                                .'|\\.css(*:378)'
+                                .'|(*:335)'
+                                .'|\\.css(*:348)'
                             .')'
                         .')'
-                        .'|(*:388)'
+                        .'|(*:358)'
                     .')'
                 .')'
             .')/?$}sDu',
     ],
     [ // $dynamicRoutes
-        83 => [[['_route' => 'app_api_endpointcalculateprice_calculatepricewithacoupon', '_controller' => 'App\\Controller\\Api\\EndpointCalculatePriceController::CalculatePriceWithACoupon'], ['product', 'taxNumber', 'couponCode'], null, null, false, true, null]],
-        90 => [[['_route' => 'app_api_endpointcalculateprice_calculatepricewithoutcoupon', '_controller' => 'App\\Controller\\Api\\EndpointCalculatePriceController::CalculatePriceWithoutCoupon'], ['product', 'taxNumber'], null, null, false, true, null]],
-        192 => [[['_route' => 'app_api_endpointpurchase_purchasewithacoupon', '_controller' => 'App\\Controller\\Api\\EndpointPurchaseController::PurchaseWithACoupon'], ['product', 'taxNumber', 'couponCode', 'paymentProcessor'], null, null, false, true, null]],
-        225 => [[['_route' => 'app_api_endpointpurchase_purchasewithoutcoupon', '_controller' => 'App\\Controller\\Api\\EndpointPurchaseController::PurchaseWithoutCoupon'], ['product', 'taxNumber', 'paymentProcessor'], null, null, false, true, null]],
-        265 => [[['_route' => '_preview_error', '_controller' => 'error_controller::preview', '_format' => 'html'], ['code', '_format'], null, null, false, true, null]],
-        285 => [[['_route' => '_wdt', '_controller' => 'web_profiler.controller.profiler::toolbarAction'], ['token'], null, null, false, true, null]],
-        331 => [[['_route' => '_profiler_search_results', '_controller' => 'web_profiler.controller.profiler::searchResultsAction'], ['token'], null, null, false, false, null]],
-        345 => [[['_route' => '_profiler_router', '_controller' => 'web_profiler.controller.router::panelAction'], ['token'], null, null, false, false, null]],
-        365 => [[['_route' => '_profiler_exception', '_controller' => 'web_profiler.controller.exception_panel::body'], ['token'], null, null, false, false, null]],
-        378 => [[['_route' => '_profiler_exception_css', '_controller' => 'web_profiler.controller.exception_panel::stylesheet'], ['token'], null, null, false, false, null]],
-        388 => [
+        61 => [[['_route' => 'app_api_endpointcalculateprice_calculatepricewithoutcoupon', '_controller' => 'App\\Controller\\Api\\EndpointCalculatePriceController::CalculatePriceWithoutCoupon'], ['product', 'taxNumber'], null, null, false, true, null]],
+        162 => [[['_route' => 'app_api_endpointpurchase_purchasewithacoupon', '_controller' => 'App\\Controller\\Api\\EndpointPurchaseController::PurchaseWithACoupon'], ['product', 'taxNumber', 'couponCode', 'paymentProcessor'], null, null, false, true, null]],
+        195 => [[['_route' => 'app_api_endpointpurchase_purchasewithoutcoupon', '_controller' => 'App\\Controller\\Api\\EndpointPurchaseController::PurchaseWithoutCoupon'], ['product', 'taxNumber', 'paymentProcessor'], null, null, false, true, null]],
+        235 => [[['_route' => '_preview_error', '_controller' => 'error_controller::preview', '_format' => 'html'], ['code', '_format'], null, null, false, true, null]],
+        255 => [[['_route' => '_wdt', '_controller' => 'web_profiler.controller.profiler::toolbarAction'], ['token'], null, null, false, true, null]],
+        301 => [[['_route' => '_profiler_search_results', '_controller' => 'web_profiler.controller.profiler::searchResultsAction'], ['token'], null, null, false, false, null]],
+        315 => [[['_route' => '_profiler_router', '_controller' => 'web_profiler.controller.router::panelAction'], ['token'], null, null, false, false, null]],
+        335 => [[['_route' => '_profiler_exception', '_controller' => 'web_profiler.controller.exception_panel::body'], ['token'], null, null, false, false, null]],
+        348 => [[['_route' => '_profiler_exception_css', '_controller' => 'web_profiler.controller.exception_panel::stylesheet'], ['token'], null, null, false, false, null]],
+        358 => [
             [['_route' => '_profiler', '_controller' => 'web_profiler.controller.profiler::panelAction'], ['token'], null, null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],

@@ -18,7 +18,7 @@ use Systemeio\TestForCandidates\PaymentProcessor\PaypalPaymentProcessor;
 
 class ApplicationController extends AbstractController
 {
-    #[Route('/calculate-price', name: 'calculate-price')]
+    #[Route('/calculate-price1', name: 'calculate-price1')]
     public function CalculatePrice(
         ManagerRegistry $doctrine,
         Request $request,
@@ -136,7 +136,7 @@ class ApplicationController extends AbstractController
     }
 
 
-    #[Route('/purchase', name: 'purchase')]
+    #[Route('/purchase1', name: 'purchase1')]
     public function Purchase(
         ManagerRegistry $doctrine,
         Request $request,

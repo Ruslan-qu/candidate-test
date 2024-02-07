@@ -15,17 +15,22 @@ use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use FOS\RestBundle\Controller\Annotations as Rest;
 
 class EndpointCalculatePriceController extends AbstractController
 {
-    #[Route('/calculate-price/product/{product}/taxNumber/{taxNumber}/couponCode/{couponCode}')]
+    #[Rest\Post('/calculate-price', name: 'calculate-price',)]
     public function CalculatePriceWithACoupon(
         ManagerRegistry $doctrine,
         ValidatorInterface $validator,
-        $product,
-        $taxNumber,
-        $couponCode,
+        Request $request,
     ): Response {
+        //dd(json_decode($request->getContent(), true));
+        $body = json_decode($request->getContent(), true);
+
+        $product = $body['product'];
+        $taxNumber = $body['taxNumber'];
+        $couponCode = $body['couponCode'];
 
         /* class JsonResponse*/
         $response = new JsonResponse;
@@ -82,9 +87,8 @@ class EndpointCalculatePriceController extends AbstractController
                     ->findOneBy(['name_product' => $name_product]);
             } else {
 
-                $response->setStatusCode(400);
-                $response->setData(['error' => 'there is no such number']);
-                return new Response('<html><body><pre>' . $response . '</pre></body></html>');
+                $data = ['error' => 'there is no such number'];
+                return new JsonResponse($data, Response::HTTP_BAD_REQUEST);
             }
             /*checking numbers in the database*/
             if ($сount_taxe != 0) {
@@ -93,9 +97,8 @@ class EndpointCalculatePriceController extends AbstractController
                     ->findOneBy(['tax_number' => $tax_number]);
             } else {
 
-                $response->setStatusCode(400);
-                $response->setData(['error' => 'there is no such number']);
-                return new Response('<html><body><pre>' . $response . '</pre></body></html>');
+                $data = ['error' => 'there is no such number'];
+                return new JsonResponse($data, Response::HTTP_BAD_REQUEST);
             }
             /*checking numbers in the database*/
             if ($сount_coupon != 0) {
@@ -104,9 +107,8 @@ class EndpointCalculatePriceController extends AbstractController
                     ->findOneBy(['number_coupon' => $number_coupon]);
             } else {
 
-                $response->setStatusCode(400);
-                $response->setData(['error' => 'there is no such number']);
-                return new Response('<html><body><pre>' . $response . '</pre></body></html>');
+                $data = ['error' => 'there is no such number'];
+                return new JsonResponse($data, Response::HTTP_BAD_REQUEST);
             }
 
             $price_product = $find_one_by_product->getPriceProduct();
@@ -124,27 +126,18 @@ class EndpointCalculatePriceController extends AbstractController
                 $amount = ($price_product - $discount) + (($price_product - $discount) / 100 * $tax_rate);
             }
 
-
-            return new Response(
-                '<html>
-                <body>
-                ' . $amount . ' euro
-                <pre>
-                ' . $response . '
-                </pre>
-                </body>
-                </html>'
-            );
+            $data = ['amount' => $amount];
+            return new JsonResponse($data);
         } else {
 
-            $response->setStatusCode(400);
-            $response->setData(['error' => 'The form contains an invalid character']);
-            return new Response('<html><body><pre>' . $response . '</pre></body></html>');
+
+            $data = ['error' => 'The form contains an invalid character'];
+            return new JsonResponse($data, Response::HTTP_BAD_REQUEST);
         }
     }
 
 
-    #[Route('/calculate-price/product/{product}/taxNumber/{taxNumber}')]
+    #[Route('/3calculate-price/product/{product}/taxNumber/{taxNumber}')]
     public function CalculatePriceWithoutCoupon(
         ManagerRegistry $doctrine,
         Request $request,
