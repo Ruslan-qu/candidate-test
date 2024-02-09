@@ -8,7 +8,7 @@
 return [
     false, // $matchHost
     [ // $staticRoutes
-        '/calculate-price' => [[['_route' => 'calculate-price', '_controller' => 'App\\Controller\\Api\\EndpointCalculatePriceController::CalculatePriceWithACoupon'], null, ['POST' => 0], null, false, false, null]],
+        '/api/calculate-price' => [[['_route' => 'calculate-price', '_controller' => 'App\\Controller\\Api\\EndpointCalculatePriceController::CalculatePriceWithACoupon'], null, ['POST' => 0], null, false, false, null]],
         '/calculate-price1' => [[['_route' => 'calculate-price1', '_controller' => 'App\\Controller\\Application\\ApplicationController::CalculatePrice'], null, null, null, false, false, null]],
         '/purchase1' => [[['_route' => 'purchase1', '_controller' => 'App\\Controller\\Application\\ApplicationController::Purchase'], null, null, null, false, false, null]],
         '/reset' => [[['_route' => 'reset', '_controller' => 'App\\Controller\\Application\\ApplicationController::ResetPart'], null, null, null, false, false, null]],

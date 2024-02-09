@@ -16,24 +16,22 @@ use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use FOS\RestBundle\Controller\Annotations as Rest;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EndpointCalculatePriceController extends AbstractController
 {
-    #[Rest\Post('/calculate-price', name: 'calculate-price',)]
+    #[Rest\Post('/api/calculate-price', name: 'calculate-price',)]
     public function CalculatePriceWithACoupon(
         ManagerRegistry $doctrine,
         ValidatorInterface $validator,
         Request $request,
-    ): Response {
+    ): JsonResponse {
         //dd(json_decode($request->getContent(), true));
         $body = json_decode($request->getContent(), true);
 
         $product = $body['product'];
         $taxNumber = $body['taxNumber'];
         $couponCode = $body['couponCode'];
-
-        /* class JsonResponse*/
-        $response = new JsonResponse;
 
         /* Enabling validation and prescribing the validation condition and error message */
         $validator = Validation::createValidator();
@@ -130,9 +128,9 @@ class EndpointCalculatePriceController extends AbstractController
             return new JsonResponse($data);
         } else {
 
-
-            $data = ['error' => 'The form contains an invalid character'];
-            return new JsonResponse($data, Response::HTTP_BAD_REQUEST);
+            // throw new NotFoundHttpException('The form contains an invalid character1');
+            $data = ['error' => 'The form contains an invalid character1'];
+            return $this->json($data, Response::HTTP_BAD_REQUEST);
         }
     }
 

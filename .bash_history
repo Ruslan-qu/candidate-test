@@ -9,3 +9,8 @@ OST
 php bin/console router:match /calculate-price/product/Iphone/taxNumber/de123456789 --method=POST
 php bin/console router:match /calculate-price/product/Iphone/taxNumber/de123456789 --method=POST
  php bin/console router:match /calculate-price/product/Iphone/taxNumber/de123456789 --method=POST
+php bin/console ?
+php bin/console make: ?
+composer require jms/serializer-bundle
+composer require friendsofsymfony/rest-bundle
+composer require generator
