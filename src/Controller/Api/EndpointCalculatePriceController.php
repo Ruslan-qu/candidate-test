@@ -10,28 +10,35 @@ use Symfony\Component\Validator\Validation;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EndpointCalculatePriceController extends AbstractController
 {
     #[Rest\Post('/api/calculate-price', name: 'calculate-price',)]
-    public function CalculatePriceWithACoupon(
+    public function CalculatePrice(
         ManagerRegistry $doctrine,
         ValidatorInterface $validator,
         Request $request,
     ): JsonResponse {
         //dd(json_decode($request->getContent(), true));
-        $body = json_decode($request->getContent(), true);
+        $body_request = json_decode($request->getContent(), true);
 
-        $product = $body['product'];
-        $taxNumber = $body['taxNumber'];
-        $couponCode = $body['couponCode'];
+
+        if (empty($body_request['product']) || empty($body_request['taxNumber'])) {
+            $data = ['error' => 'Not defined product or taxNumber'];
+            return $this->json($data, Response::HTTP_BAD_REQUEST);
+        }
+
+        $product = $body_request['product'];
+        $taxNumber = $body_request['taxNumber'];
+        $couponCode = $body_request['couponCode'];
 
         /* Enabling validation and prescribing the validation condition and error message */
         $validator = Validation::createValidator();
@@ -43,22 +50,24 @@ class EndpointCalculatePriceController extends AbstractController
         ];
 
         $constraint = new Collection([
-            'product_error' => new Regex([
+            'product_error' =>
+            new Regex([
                 'pattern' => '/^[a-z]+$/i',
-                'message' => 'The form contains an invalid character'
+                'message' => 'Product contains an invalid character'
             ]),
-            'taxNumber_error' => new Regex([
+            'taxNumber_error' =>
+            new Regex([
                 'pattern' => '/^([a-z]{2}([a-z|0-9]{2})?[0-9]{9}){1}$/i',
-                'message' => 'The form contains an invalid number'
+                'message' => 'TaxNumber contains an invalid number'
             ]),
             'couponCode_error' => new Regex([
                 'pattern' => '/^([a-z]{1}[0-9]{2})?$/i',
-                'message' => 'The form contains an invalid number'
+                'message' => 'CouponCode contains an invalid number'
             ]),
         ]);
 
         $errors_regex = $validator->validate($input, $constraint);
-
+        //dd($errors_regex);
         /* Validation */
         if (!$errors_regex->count()) {
 
@@ -127,7 +136,15 @@ class EndpointCalculatePriceController extends AbstractController
             $data = ['amount' => $amount];
             return new JsonResponse($data);
         } else {
-
+            //$data = [];
+            if ($errors_regex) {
+                foreach ($errors_regex as $key) {
+                    $data[$key->getpropertyPath()] = $key->getmessage();
+                    //$message = $key->getmessage();
+                    //$propertyPath = $key->getpropertyPath();
+                }
+            }
+            dd($data);
             // throw new NotFoundHttpException('The form contains an invalid character1');
             $data = ['error' => 'The form contains an invalid character1'];
             return $this->json($data, Response::HTTP_BAD_REQUEST);
