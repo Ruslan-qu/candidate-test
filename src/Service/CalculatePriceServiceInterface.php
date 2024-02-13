@@ -2,7 +2,9 @@
 
 namespace App\Service;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 interface  CalculatePriceServiceInterface
 {
-    public function ValidatorCalculatePrice($body_request): void;
+    public function verificationCalculation($body_request): JsonResponse;
 }
