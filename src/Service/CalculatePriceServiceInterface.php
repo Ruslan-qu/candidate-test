@@ -6,5 +6,5 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 interface  CalculatePriceServiceInterface
 {
-    public function verificationCalculation($body_request): JsonResponse;
+    public function verificationCalculation($body_request): int;
 }

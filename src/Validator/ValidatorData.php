@@ -18,17 +18,19 @@ use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
-
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 class ValidatorData
 {
-    public function ValidatorRegex($data, $pattern, $message, $key_eroor): array
-    {
+    public function ValidatorRegex(
+        $data,
+        $pattern,
+        $message,
+        $key_error
+    ): array {
         $validator = Validation::createValidator();
 
         $error = new Regex(['pattern' => $pattern]);
-
         $error->message = $message;
 
         $errors = $validator->validate(
@@ -36,9 +38,16 @@ class ValidatorData
             $error
         );
 
-        $error_data[$key_eroor] = $errors[0]->getmessage();
+        return $this->countError($errors, $key_error);
+    }
 
+    public function countError($errors, $key_error): array
+    {
+        $arr_error = [];
+        if (count($errors) != 0) {
+            $arr_error[$key_error] = $errors[0]->getmessage();
+        }
 
-        return $error_data;
+        return $arr_error;
     }
 }

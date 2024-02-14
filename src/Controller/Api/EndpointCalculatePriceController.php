@@ -34,93 +34,14 @@ class EndpointCalculatePriceController extends AbstractController
 
         $CalculatePriceServiceInterface->verificationCalculation($body_request);
 
+        //return new JsonResponse(['ghjk' => 'ghjff'], Response::HTTP_BAD_REQUEST);
+
+        dd('qu');
 
 
-        if (empty($body_request['product'])) {
-            $data = ['error' => 'Not defined product'];
-            return $this->json($data, Response::HTTP_BAD_REQUEST);
-        }
-        if (empty($body_request['taxNumber'])) {
-            $data = ['error' => 'Not defined taxNumber'];
-            return $this->json($data, Response::HTTP_BAD_REQUEST);
-        }
-
-        $product = $body_request['product'];
-        $taxNumber = $body_request['taxNumber'];
-
-
-
-        $validator = Validation::createValidator();
-
-        $product_error = new Regex(['pattern' => '/^[a-z]+$/i']);
-
-        $product_error->message = 'Product contains an invalid character';
-
-        $product_errors = $validator->validate(
-            $product,
-            $product_error
-        );
-        foreach ($product_errors as $key) {
-            $error_product['product'] = $key->getmessage();
-        }
-
-        $taxNumber_error = new Regex(['pattern' => '/^([a-z]{2}([a-z|0-9]{2})?[0-9]{9}){1}$/i']);
-
-        $taxNumber_error->message = 'TaxNumber contains an invalid number';
-
-        $taxNumber_errors = $validator->validate(
-            $taxNumber,
-            $product_error
-        );
-        foreach ($taxNumber_errors as $key) {
-            $error_taxNumber['taxNumber'] = $key->getmessage();
-        }
-        $data = array_merge($error_product, $error_taxNumber);
-        //dd($error_product);
-        /* $input = [
-            'product_error' => $product,
-            'taxNumber_error' => $taxNumber,
-        ];
-
-        $constraint = new Collection([
-            'product_error' =>
-            new Regex([
-                'pattern' => '/^[a-z]+$/i',
-                'message' => 'Product contains an invalid character'
-            ]),
-            'taxNumber_error' =>
-            new Regex([
-                'pattern' => '/^([a-z]{2}([a-z|0-9]{2})?[0-9]{9}){1}$/i',
-                'message' => 'TaxNumber contains an invalid number'
-            ]),
-        ]);
-        $errors_regex = $validator->validate($input, $constraint);
-        dd($errors_regex);*/
-        if (!empty($body_request['couponCode'])) {
-            $couponCode = $body_request['couponCode'];
-
-            $couponCode_error = new Regex(['pattern' => '/^([a-z]{1}[0-9]{2})?$/i']);
-
-            $couponCode_error->message = 'CouponCode contains an invalid number';
-
-            $couponCode_errors = $validator->validate(
-                $couponCode,
-                $couponCode_error
-            );
-            foreach ($couponCode_errors as $key) {
-                $error_couponCode['couponCode'] = $key->getmessage();
-            }
-            $data = array_merge($data, $error_couponCode);
-        }
-
-
-        //dd($data);
-
-
-        /* Validation */
         if (empty($data)) {
 
-            $name_product = strtolower($product);
+            /*$name_product = strtolower($product);
 
             $number_coupon = strtolower($couponCode);
 
@@ -136,7 +57,7 @@ class EndpointCalculatePriceController extends AbstractController
             $сount_coupon = $doctrine->getRepository(Coupons::class)
                 ->count(['number_coupon' => $number_coupon]);
 
-            /*checking numbers in the database*/
+            /*checking numbers in the database
             if ($сount_product != 0) {
 
                 $find_one_by_product = $doctrine->getRepository(Products::class)
@@ -145,8 +66,8 @@ class EndpointCalculatePriceController extends AbstractController
 
                 $data = ['error' => 'there is no such number'];
                 return new JsonResponse($data, Response::HTTP_BAD_REQUEST);
-            }
-            /*checking numbers in the database*/
+            }*/
+            /*checking numbers in the database
             if ($сount_taxe != 0) {
 
                 $find_one_by_tax = $doctrine->getRepository(Taxes::class)
@@ -155,8 +76,8 @@ class EndpointCalculatePriceController extends AbstractController
 
                 $data = ['error' => 'there is no such number'];
                 return new JsonResponse($data, Response::HTTP_BAD_REQUEST);
-            }
-            /*checking numbers in the database*/
+            }*/
+            /*checking numbers in the database
             if ($сount_coupon != 0) {
 
                 $find_one_by_coupon = $doctrine->getRepository(Coupons::class)
@@ -183,11 +104,8 @@ class EndpointCalculatePriceController extends AbstractController
             }
 
             $data = ['amount' => $amount];
-            return new JsonResponse($data);
+            return new JsonResponse($data);*/
         } else {
-            //$data = [];
-
-            //dd($data);
             // throw new NotFoundHttpException('The form contains an invalid character1');
             //$data = ['error' => 'The form contains an invalid character1'];
             return $this->json($data, Response::HTTP_BAD_REQUEST);
