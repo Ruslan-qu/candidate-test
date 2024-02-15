@@ -3,18 +3,20 @@
 namespace App\Service;
 
 use App\Validator\ValidatorData;
-use Symfony\Component\HttpFoundation\Response;
+use App\Calculation\CalculationAmount;
 use App\Service\CalculatePriceServiceInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 
 
 class CalculatePriceService implements CalculatePriceServiceInterface
 {
-    public function verificationCalculation($body_request): int
-    {
+    public function verificationCalculation(
+        $productsRepository,
+        $taxesRepository,
+        $couponsRepository,
+        $body_request
+    ): array {
         //  dd($body_request);
         if (empty($body_request['product'])) {
             throw new BadRequestHttpException('Not defined product');
@@ -23,29 +25,30 @@ class CalculatePriceService implements CalculatePriceServiceInterface
             throw new BadRequestHttpException('Not defined taxNumber');
         }
         /* class ValidatorPrice for data validation*/
-        $ValidatorData = new ValidatorData();
+        $validatorData = new ValidatorData();
 
         $arr_errors = [];
         $product = $body_request['product'];
         $pattern = '/^[a-z]+$/i';
         $message = 'Product contains an invalid character';
         $key_error = 'product';
-        $arr_errors[] = $ValidatorData
+        $arr_errors[] = $validatorData
             ->ValidatorRegex($product, $pattern, $message, $key_error);
 
-        $taxNumber = $body_request['taxNumber'];
+        $tax_number = $body_request['taxNumber'];
         $pattern = '/^([a-z]{2}([a-z|0-9]{2})?[0-9]{9}){1}$/i';
         $message = 'TaxNumber contains an invalid number';
         $key_error = 'taxNumber';
-        $arr_errors[] = $ValidatorData
-            ->ValidatorRegex($taxNumber, $pattern, $message, $key_error);
+        $arr_errors[] = $validatorData
+            ->ValidatorRegex($tax_number, $pattern, $message, $key_error);
 
+        $couponCode = '';
         if (!empty($body_request['couponCode'])) {
             $couponCode = $body_request['couponCode'];
             $pattern = '/^([a-z]{1}[0-9]{2})?$/i';
             $message = 'couponCode contains an invalid number';
             $key_error = 'couponCode';
-            $arr_errors[] = $ValidatorData
+            $arr_errors[] = $validatorData
                 ->ValidatorRegex($couponCode, $pattern, $message, $key_error);
         }
         //dd(array_filter($arr_eroors));
@@ -53,10 +56,39 @@ class CalculatePriceService implements CalculatePriceServiceInterface
         //dd(array_filter($arr_eroor, count()));
 
         if (empty($array_filter_errors)) {
-            dd($arr_errors);
+            //dd($arr_errors);
+            $name_product = strtolower($product);
+            $product = $productsRepository->findOneByProductPrice($name_product);
+            $price_product = $product[0]['price_product'];
+
+            $taxe = strtolower($tax_number);
+            $tax_number_substr = substr($taxe, 0, 2);
+            $tax_amount = $taxesRepository->findOneByPercentageTaxes($tax_number_substr);
+            $tax_rate = $tax_amount[0]['tax_rate'];
+
+            $discount = 0;
+            $id_type_coupon = 0;
+            if ($couponCode) {
+                $number_coupon = strtolower($couponCode);
+                $coupon_code = $couponsRepository->findOneByDiscountAmount($number_coupon);
+                $discount = $coupon_code[0]['discount'];
+                $id_type_coupon = $coupon_code[0]['id'];
+            }
+
+            $calculationAmount = new CalculationAmount();
+
+            $amount = $calculationAmount->calculationProductPrice(
+                $price_product,
+                $tax_rate,
+                $discount,
+                $id_type_coupon
+            );
+            $arr_amount = ['amount' => $amount];
+
+            return $arr_amount;
         } else {
 
-            $arr_data_errors = ['Eroor' => $array_filter_errors];
+            $arr_data_errors = ['Error' => $array_filter_errors];
             $json_arr_data_errors = json_encode($arr_data_errors);
             throw new BadRequestHttpException($json_arr_data_errors);
         }

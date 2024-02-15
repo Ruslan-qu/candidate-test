@@ -265,6 +265,7 @@
       <tag name="controller.service_arguments"/>
       <tag name="routing.route_loader"/>
     </service>
+    <service id="App\Calculation\CalculationAmount" class="App\Calculation\CalculationAmount" autowire="true" autoconfigure="true"/>
     <service id="App\Controller\Api\EndpointCalculatePriceController" class="App\Controller\Api\EndpointCalculatePriceController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
@@ -4778,11 +4779,14 @@
         <argument key="loader" type="service_closure" id=".errored..service_locator.xUrKPVU.Symfony\Component\Config\Loader\LoaderInterface"/>
       </argument>
     </service>
-    <service id=".service_locator.ye6QAgn" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.3pzZ9u0" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="CalculatePriceServiceInterface" type="service_closure" id="App\Service\CalculatePriceService"/>
+        <argument key="couponsRepository" type="service_closure" id="App\Repository\CouponsRepository"/>
         <argument key="doctrine" type="service_closure" id="doctrine"/>
+        <argument key="productsRepository" type="service_closure" id="App\Repository\ProductsRepository"/>
+        <argument key="taxesRepository" type="service_closure" id="App\Repository\TaxesRepository"/>
         <argument key="validator" type="service_closure" id="debug.validator"/>
       </argument>
     </service>
@@ -4793,11 +4797,10 @@
         <argument key="validator" type="service_closure" id="debug.validator"/>
       </argument>
     </service>
-    <service id=".service_locator.8QD9J7Y" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.OqB_Jdq" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
-        <argument key="App\Controller\Api\EndpointCalculatePriceController::CalculatePrice" type="service_closure" id=".service_locator.ye6QAgn"/>
-        <argument key="App\Controller\Api\EndpointCalculatePriceController::CalculatePriceWithoutCoupon" type="service_closure" id=".service_locator.6B_ZjHa"/>
+        <argument key="App\Controller\Api\EndpointCalculatePriceController::CalculatePrice" type="service_closure" id=".service_locator.3pzZ9u0"/>
         <argument key="App\Controller\Api\EndpointPurchaseController::PurchaseWithACoupon" type="service_closure" id=".service_locator.6B_ZjHa"/>
         <argument key="App\Controller\Api\EndpointPurchaseController::PurchaseWithoutCoupon" type="service_closure" id=".service_locator.6B_ZjHa"/>
         <argument key="App\Controller\Application\ApplicationController::CalculatePrice" type="service_closure" id=".service_locator.6B_ZjHa"/>
@@ -4806,8 +4809,7 @@
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.xUrKPVU"/>
         <argument key="kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.xUrKPVU"/>
-        <argument key="App\Controller\Api\EndpointCalculatePriceController:CalculatePrice" type="service_closure" id=".service_locator.ye6QAgn"/>
-        <argument key="App\Controller\Api\EndpointCalculatePriceController:CalculatePriceWithoutCoupon" type="service_closure" id=".service_locator.6B_ZjHa"/>
+        <argument key="App\Controller\Api\EndpointCalculatePriceController:CalculatePrice" type="service_closure" id=".service_locator.3pzZ9u0"/>
         <argument key="App\Controller\Api\EndpointPurchaseController:PurchaseWithACoupon" type="service_closure" id=".service_locator.6B_ZjHa"/>
         <argument key="App\Controller\Api\EndpointPurchaseController:PurchaseWithoutCoupon" type="service_closure" id=".service_locator.6B_ZjHa"/>
         <argument key="App\Controller\Application\ApplicationController:CalculatePrice" type="service_closure" id=".service_locator.6B_ZjHa"/>
@@ -5084,12 +5086,12 @@
     <service id="debug.argument_resolver.request.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestValueResolver"/>
     <service id="debug.argument_resolver.session.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\SessionValueResolver"/>
     <service id="debug.argument_resolver.service.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
-      <argument type="service" id=".service_locator.8QD9J7Y"/>
+      <argument type="service" id=".service_locator.OqB_Jdq"/>
     </service>
     <service id="debug.argument_resolver.default.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver"/>
     <service id="debug.argument_resolver.variadic.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\VariadicValueResolver"/>
     <service id="debug.argument_resolver.not_tagged_controller.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
-      <argument type="service" id=".service_locator.8QD9J7Y"/>
+      <argument type="service" id=".service_locator.OqB_Jdq"/>
     </service>
     <service id=".doctrine.orm.default_metadata_driver.inner" class="Doctrine\Persistence\Mapping\Driver\MappingDriverChain">
       <call method="addDriver">
@@ -5901,7 +5903,7 @@
     <service id="fos_rest.view_handler" alias="fos_rest.view_handler.default" public="true"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.gSv9zYw" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.8QD9J7Y"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.OqB_Jdq"/>
     <service id="session" alias=".session.do-not-use" public="true">
       <deprecated package="symfony/framework-bundle" version="5.3">The "%alias_id%" service and "SessionInterface" alias are deprecated, use "$requestStack-&gt;getSession()" instead.</deprecated>
     </service>
@@ -5913,8 +5915,8 @@
     <service id=".service_locator.kU_9bh." alias="jms_serializer.handler_registry.service_locator"/>
     <service id=".service_locator.13qzyLC" alias="jms_serializer.metadata.service_locator"/>
     <service id=".service_locator.0GV1BZZ" alias=".service_locator.gSv9zYw"/>
-    <service id=".service_locator.2ZwqtgJ" alias=".service_locator.ye6QAgn"/>
-    <service id=".service_locator.uqUHsWp" alias=".service_locator.8QD9J7Y"/>
+    <service id=".service_locator.43BLhWf" alias=".service_locator.3pzZ9u0"/>
+    <service id=".service_locator.cgWZzgG" alias=".service_locator.OqB_Jdq"/>
     <service id=".service_locator.bkUSUfi" alias=".service_locator.AHPGEE6"/>
     <service id=".service_locator.4isK98H" alias=".service_locator.4wGPaQ5"/>
     <service id=".service_locator.4hi2aOY" alias=".service_locator.bBRwv06"/>
@@ -5941,7 +5943,7 @@
     <service id="jms_serializer.handler_registry" alias="jms_serializer.traceable_handler_registry"/>
     <service id="jms_serializer.metadata.file_locator" alias="jms_serializer.metadata.traceable_file_locator"/>
     <service id=".service_locator.uo5c0SP" alias=".service_locator.xUrKPVU"/>
-    <service id=".service_locator.AoaclFF" alias=".service_locator.ye6QAgn"/>
+    <service id=".service_locator.wYkzlLF" alias=".service_locator.3pzZ9u0"/>
     <service id=".service_locator.arik6u0" alias=".service_locator.6B_ZjHa"/>
     <service id=".service_locator.xwPrrlL" alias=".service_locator.mx0UMmY"/>
     <service id=".service_locator.L0rFhJm" alias=".service_locator.GVyCdgr"/>

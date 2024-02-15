@@ -6,11 +6,16 @@ use App\Entity\Taxes;
 use App\Entity\Coupons;
 use App\Entity\Products;
 use StripePaymentProcessor;
+use App\Repository\TaxesRepository;
+use App\Repository\CouponsRepository;
+use App\Repository\ProductsRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Service\CalculatePriceServiceInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Collection;
@@ -20,15 +25,13 @@ use Systemeio\TestForCandidates\PaymentProcessor\PaypalPaymentProcessor;
 
 class EndpointPurchaseController extends AbstractController
 {
-    #[Route('/purchase/product/{product}/taxNumber/{taxNumber}/couponCode/{couponCode}/paymentProcessor/{paymentProcessor}')]
-    public function PurchaseWithACoupon(
-        ManagerRegistry $doctrine,
+    #[Rest\Post('/api/purchase', name: 'purchase',)]
+    public function productPayment(
         Request $request,
-        ValidatorInterface $validator,
-        $product,
-        $taxNumber,
-        $couponCode,
-        $paymentProcessor,
+        CalculatePriceServiceInterface $CalculatePriceServiceInterface,
+        ProductsRepository $productsRepository,
+        TaxesRepository $taxesRepository,
+        CouponsRepository $couponsRepository,
     ): Response {
 
         /* class JsonResponse*/

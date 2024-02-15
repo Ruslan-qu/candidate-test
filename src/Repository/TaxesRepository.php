@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Taxes;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
@@ -21,28 +22,23 @@ class TaxesRepository extends ServiceEntityRepository
         parent::__construct($registry, Taxes::class);
     }
 
-    //    /**
-    //     * @return Taxes[] Returns an array of Taxes objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('t.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return Taxes[] Returns an array of Taxes objects
+     */
+    public function findOneByPercentageTaxes($tax_number): array
+    {
+        $entityManager = $this->getEntityManager();
 
-    //    public function findOneBySomeField($value): ?Taxes
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $query = $entityManager->createQuery(
+            'SELECT t.tax_rate
+                FROM App\Entity\Taxes t
+                WHERE t.tax_number = :tax_number'
+        )->setParameter('tax_number', $tax_number);
+
+        if (empty($query->getResult())) {
+            throw new BadRequestHttpException('The "taxNumber" does not exist');
+        }
+
+        return $query->getResult();
+    }
 }

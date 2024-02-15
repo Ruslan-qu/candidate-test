@@ -2,9 +2,12 @@
 
 namespace App\Service;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
-
 interface  CalculatePriceServiceInterface
 {
-    public function verificationCalculation($body_request): int;
+    public function verificationCalculation(
+        $productsRepository,
+        $taxesRepository,
+        $couponsRepository,
+        $body_request
+    ): array;
 }

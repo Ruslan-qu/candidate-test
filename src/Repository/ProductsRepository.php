@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Products;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
@@ -20,29 +21,23 @@ class ProductsRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Products::class);
     }
+    /**
+     * @return Products[] Returns an array of Products objects
+     */
+    public function findOneByProductPrice($name_product): array
+    {
+        $entityManager = $this->getEntityManager();
 
-    //    /**
-    //     * @return Products[] Returns an array of Products objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+        $query = $entityManager->createQuery(
+            'SELECT p.price_product
+                FROM App\Entity\Products p
+                WHERE p.name_product = :name_product'
+        )->setParameter('name_product', $name_product);
 
-    //    public function findOneBySomeField($value): ?Products
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (empty($query->getResult())) {
+            throw new BadRequestHttpException('The "' . $name_product . '" does not exist');
+        }
+
+        return $query->getResult();
+    }
 }
