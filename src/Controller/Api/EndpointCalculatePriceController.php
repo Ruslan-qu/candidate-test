@@ -16,14 +16,14 @@ class EndpointCalculatePriceController extends AbstractController
     #[Rest\Post('/api/calculate-price', name: 'calculate-price',)]
     public function CalculatePrice(
         Request $request,
-        CalculatePriceServiceInterface $CalculatePriceServiceInterface,
+        CalculatePriceServiceInterface $calculatePriceServiceInterface,
         ProductsRepository $productsRepository,
         TaxesRepository $taxesRepository,
         CouponsRepository $couponsRepository,
     ): JsonResponse {
         $body_request = json_decode($request->getContent(), true);
 
-        $amount = $CalculatePriceServiceInterface->verificationCalculation(
+        $amount = $calculatePriceServiceInterface->verificationCalculation(
             $productsRepository,
             $taxesRepository,
             $couponsRepository,

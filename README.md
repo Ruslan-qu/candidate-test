@@ -1,31 +1,79 @@
-# candidate-test
-install docker</br>
-install docker compose</br>
-Docker php && Nginx</br>
-Create Symfony Application</br>
-install PHPUnit</br>
-integrate PHPUnit</br>
-install Doctrine</br>
-install PostgreSQL</br>
-Form Customization calculate</br>
-form validation calculate</br>
-Form Customization Purchase</br>
-End</br>
+Задание:
+Необходимо написать 2 эндпоинта:</br>
+для расчёта цены</br>
+POST:/api/calculate-price</br>
+Пример json тела запроса:</br>
+{</br>
+    "product": "Iphone",</br>
+    "taxNumber": "DE123456789",</br>
+    "couponCode": "D15"</br>
+}</br>
+POST: для выполнения покупки</br>
+POST:/api/purchase</br>
+Пример json тела запроса:</br>
+{</br>
+    "product": "Iphone",</br>
+    "taxNumber": "IT12345678900",</br>
+    "couponCode": "D15",</br>
+    "payment": 109</br>
+}</br>
+При успешном выполнении запроса вернуть HTTP ответ с кодом 200.</br>
+При неверных входных данных или ошибках оплаты вернуть HTTP ответ с кодом 400.</br>
+</br>
+Продукты:</br>
+Предполагается, что продукты хранятся в БД, для примера можно взять 3 продукта:</br>
+Iphone (1000 евро)</br>
+Наушники (200 евро)</br>
+Чехол (100 евро)</br>
+</br>
+Купоны:</br>
+При наличии купона покупатель может применить его к покупке.</br>
+Купон может быть двух типов:</br>
+1.фиксированная сумма скидки</br>
+2.процент от суммы покупки</br>
+Предполагается, что купоны хранятся в БД, для примера можно взять 4 купона:</br>
+d20 (20%)</br>
+p15 (15 евро)</br>
+d10 (10%)</br>
+p5 (5 евро)</br>
+у покупателя не должно быть возможности применить купон P50,</br>
+если он не хранится явным образом.</br>
+</br>
+Расчет налога:</br>
+При покупке продукта получатель сверх цены продукта должен уплатить налог,</br>
+относительно страны налогового номера:</br>
+Германии - 19%</br>
+Италии - 22%</br>
+Франции - 20%</br>
+Греции - 24%</br>
+В итоге для покупателя Iphone из Греции цена составляет 124 евро</br>
+(цена продукта 100 евро + налог 24%).</br>
+Если у покупателя есть купон на 6% скидку на покупку,</br>
+то цена будет 116.56 евро (цена продукта 100 евро - 6% скидка + налог 24%).</br>
+Формат налогового номера:</br>
+DEXXXXXXXXX - для жителей Германии,</br>
+ITXXXXXXXXXXX - для жителей Италии,</br>
+GRXXXXXXXXX - для жителей Греции,</br>
+FRYYXXXXXXXXX - для жителей Франции</br>
+где:</br>
+первые два символа - это код страны,</br>
+X - любая цифра от 0 до 9,</br>
+Y - любая буква</br>
+</br>
+Детали:</br>
+При выполнении задания нужно:</br>
+1.реализовать валидацию всех полей (в том числе корректность tax номера согласно формату)</br>
+в теле запросов, используя Symfony validator</br>
+2.рассчитать итоговую цену покупки вместе с купоном (если указан) и налогом</br>
+3.приложить в README.md примеры в формате curl команды</br>
 
+Практическая реализация задания:</br>
 1 clone candidate-test</br>
 2 docker compose -f ./docker/docker-compose.yml build</br>
 3 docker compose -f ./docker/docker-compose.yml up -d</br>
-
-
-
+</br>
 #endpoint :</br>
-1 /calculate-price/product/{product}/taxNumber/{taxNumber}/couponCode/{couponCode}</br>
-2 /calculate-price/product/{product}/taxNumber/{taxNumber}</br>
-3 /purchase/product/{product}/taxNumber/{taxNumber}/couponCode/{couponCode}/paymentProcessor/{paymentProcessor}</br>
-4 /purchase/product/{product}/taxNumber/{taxNumber}/paymentProcessor/{paymentProcessor}</br>
-
-
-
-#application with a form :</br>
-1 http://127.0.0.1/calculate-price</br>
-2 http://127.0.0.1/purchase</br>
+1 POST:/api/calculate-price</br>
+curl -X POST -i 'http://127.0.0.1/api/calculate-price' --data '{"product": "iphone", "taxNumber": "de123456789", "couponCode": "d20"}'</br>
+2 POST:/api/purchase</br>
+curl -X POST -i 'http://127.0.0.1/api/purchase' --data '{"product": "iphone", "taxNumber": "de123456789", "couponCode": "d20", "payment": 952}'</br>

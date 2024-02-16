@@ -3,11 +3,9 @@
 namespace App\Service;
 
 use App\Validator\ValidatorData;
-use App\Calculation\CalculationAmount;
+use App\Calculation\Calculation;
 use App\Service\CalculatePriceServiceInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-
-
 
 class CalculatePriceService implements CalculatePriceServiceInterface
 {
@@ -17,7 +15,7 @@ class CalculatePriceService implements CalculatePriceServiceInterface
         $couponsRepository,
         $body_request
     ): array {
-        //  dd($body_request);
+
         if (empty($body_request['product'])) {
             throw new BadRequestHttpException('Not defined product');
         }
@@ -51,12 +49,11 @@ class CalculatePriceService implements CalculatePriceServiceInterface
             $arr_errors[] = $validatorData
                 ->ValidatorRegex($couponCode, $pattern, $message, $key_error);
         }
-        //dd(array_filter($arr_eroors));
+
         $array_filter_errors = array_filter($arr_errors);
-        //dd(array_filter($arr_eroor, count()));
 
         if (empty($array_filter_errors)) {
-            //dd($arr_errors);
+
             $name_product = strtolower($product);
             $product = $productsRepository->findOneByProductPrice($name_product);
             $price_product = $product[0]['price_product'];
@@ -75,7 +72,7 @@ class CalculatePriceService implements CalculatePriceServiceInterface
                 $id_type_coupon = $coupon_code[0]['id'];
             }
 
-            $calculationAmount = new CalculationAmount();
+            $calculationAmount = new Calculation();
 
             $amount = $calculationAmount->calculationProductPrice(
                 $price_product,
@@ -92,6 +89,5 @@ class CalculatePriceService implements CalculatePriceServiceInterface
             $json_arr_data_errors = json_encode($arr_data_errors);
             throw new BadRequestHttpException($json_arr_data_errors);
         }
-        return 1;
     }
 }

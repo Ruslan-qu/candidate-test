@@ -4,13 +4,7 @@
 
 return [
     'calculate-price' => [[], ['_controller' => 'App\\Controller\\Api\\EndpointCalculatePriceController::CalculatePrice'], [], [['text', '/api/calculate-price']], [], [], []],
-    'app_api_endpointpurchase_purchasewithacoupon' => [['product', 'taxNumber', 'couponCode', 'paymentProcessor'], ['_controller' => 'App\\Controller\\Api\\EndpointPurchaseController::PurchaseWithACoupon'], [], [['variable', '/', '[^/]++', 'paymentProcessor', true], ['text', '/paymentProcessor'], ['variable', '/', '[^/]++', 'couponCode', true], ['text', '/couponCode'], ['variable', '/', '[^/]++', 'taxNumber', true], ['text', '/taxNumber'], ['variable', '/', '[^/]++', 'product', true], ['text', '/purchase/product']], [], [], []],
-    'app_api_endpointpurchase_purchasewithoutcoupon' => [['product', 'taxNumber', 'paymentProcessor'], ['_controller' => 'App\\Controller\\Api\\EndpointPurchaseController::PurchaseWithoutCoupon'], [], [['variable', '/', '[^/]++', 'paymentProcessor', true], ['text', '/paymentProcessor'], ['variable', '/', '[^/]++', 'taxNumber', true], ['text', '/taxNumber'], ['variable', '/', '[^/]++', 'product', true], ['text', '/purchase/product']], [], [], []],
-    'calculate-price1' => [[], ['_controller' => 'App\\Controller\\Application\\ApplicationController::CalculatePrice'], [], [['text', '/calculate-price1']], [], [], []],
-    'purchase1' => [[], ['_controller' => 'App\\Controller\\Application\\ApplicationController::Purchase'], [], [['text', '/purchase1']], [], [], []],
-    'reset' => [[], ['_controller' => 'App\\Controller\\Application\\ApplicationController::ResetPart'], [], [['text', '/reset']], [], [], []],
-    'home_page' => [[], ['_controller' => 'App\\Controller\\Application\\HomePageController::index'], [], [['text', '/']], [], [], []],
-    'health_check' => [[], ['_controller' => 'App\\Controller\\Test\\HealthCheckAction'], [], [['text', '/health-check']], [], [], []],
+    'purchase' => [[], ['_controller' => 'App\\Controller\\Api\\EndpointPurchaseController::productPayment'], [], [['text', '/api/purchase']], [], [], []],
     '_preview_error' => [['code', '_format'], ['_controller' => 'error_controller::preview', '_format' => 'html'], ['code' => '\\d+'], [['variable', '.', '[^/]++', '_format', true], ['variable', '/', '\\d+', 'code', true], ['text', '/_error']], [], [], []],
     '_wdt' => [['token'], ['_controller' => 'web_profiler.controller.profiler::toolbarAction'], [], [['variable', '/', '[^/]++', 'token', true], ['text', '/_wdt']], [], [], []],
     '_profiler_home' => [[], ['_controller' => 'web_profiler.controller.profiler::homeAction'], [], [['text', '/_profiler/']], [], [], []],
